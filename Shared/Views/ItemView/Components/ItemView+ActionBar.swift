@@ -40,9 +40,13 @@ extension ItemView {
 
             VStack(alignment: alignment, spacing: viewLayout.value(standard: 8, large: 24)) {
                 if provider.item.presentPlayButton {
-                    PlayButton(provider: provider)
-                        .coordinatedFocus(ItemView.Component.play, selection: $focusedButton)
-                        .frame(height: viewLayout.controlHeight)
+                    VStack(spacing: viewLayout.value(standard: 6, large: 12)) {
+                        PlayButton(provider: provider)
+                            .coordinatedFocus(ItemView.Component.play, selection: $focusedButton)
+                            .frame(height: viewLayout.controlHeight)
+
+                        PlayButton.Details(provider: provider)
+                    }
                 }
 
                 ItemActionButtons(

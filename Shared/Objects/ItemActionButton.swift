@@ -105,6 +105,23 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         }
     }
 
+    #if os(tvOS)
+    // Focus moves down from Play onto the bar, so toggles that change server state stay out of its lead.
+    static let defaultBarActionButtons: [ItemActionButton] = [
+        .trailers,
+        .shuffle,
+        .playback,
+        .favorited,
+        .record
+    ]
+
+    static let defaultMenuActionButtons: [ItemActionButton] = [
+        .played,
+        .refresh,
+        .subtitles,
+        .delete
+    ]
+    #else
     static let defaultBarActionButtons: [ItemActionButton] = [
         .played,
         .favorited,
@@ -115,11 +132,10 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
     ]
 
     static let defaultMenuActionButtons: [ItemActionButton] = [
+        .editMetadata,
         .refresh,
         .subtitles,
         .delete
     ]
-        #if os(iOS)
-            .prepending(.editMetadata)
-        #endif
+    #endif
 }

@@ -69,12 +69,11 @@ struct AboutItemGroup: ContentGroup {
                                     .multilineTextAlignment(.leading)
                             }
                         }
-                        .frame(maxHeight: .infinity, alignment: .topLeading)
 
                         content
                     }
                     .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .backport
                     .glassEffect(
                         in: .rect(
@@ -122,17 +121,50 @@ struct AboutItemGroup: ContentGroup {
             ) {
                 router.route(to: .mediaSourceInfo(source: mediaSource))
             } content: {
-                if let mediaStreams = mediaSource.mediaStreams {
-                    let text = mediaStreams.compactMap(\.displayTitle)
-                        .joined(separator: ", ")
+                Grid(alignment: .leading, horizontalSpacing: gridColumnSpacing, verticalSpacing: 5) {
+                    ForEach(streamSummary(for: mediaSource), id: \.label) { property in
+                        GridRow {
+                            Text(property.label)
+                                .foregroundStyle(.secondary)
 
-                    Text(text)
-                        .font(.footnote)
-                        .lineLimit(4)
-                        .multilineTextAlignment(.leading)
+                            Text(property.value)
+                                .lineLimit(1)
+                        }
+                    }
                 }
+                .font(.footnote)
             }
             .aspectRatio(cardAspectRatio, contentMode: .fit)
+        }
+
+        /// One line each for video, audio, and subtitles, rather than every stream in server order
+        @ArrayBuilder<MediaStream.Property>
+        private func streamSummary(for mediaSource: MediaSourceInfo) -> [MediaStream.Property] {
+            if let video = mediaSource.videoStreams?.first?.displayTitle {
+                (label: L10n.video, value: video)
+            }
+
+            if let audioStreams = mediaSource.audioStreams,
+               let audio = audioStreams.first(where: { $0.isDefault == true }) ?? audioStreams.first
+            {
+                let format = [audio.codec?.uppercased(), audio.channelLayout?.localizedCapitalized]
+                    .compacted()
+                    .joined(separator: " ")
+
+                (label: L10n.audio, value: [languageName(for: audio), format.nilIfBlank].compacted().joined(separator: " · "))
+            }
+
+            if let subtitles = mediaSource.subtitleStreams?.compactMap(languageName(for:)).uniqued().joined(separator: ", "),
+               subtitles.isNotEmpty
+            {
+                (label: L10n.subtitles, value: subtitles)
+            }
+        }
+
+        private func languageName(for stream: MediaStream) -> String? {
+            guard let language = stream.language, language != "und" else { return nil }
+
+            return Locale.current.localizedString(forLanguageCode: language)
         }
 
         private func ratingsCard(criticRating: Float, communityRating: Float) -> some View {
@@ -140,45 +172,53 @@ struct AboutItemGroup: ContentGroup {
                 title: L10n.ratings,
                 action: {}
             ) {
-                if criticRating > -1 {
-                    HStack {
-                        Group {
-                            if criticRating >= 60 {
-                                Image(.tomatoFresh)
-                                    .symbolRenderingMode(.multicolor)
-                                    .foregroundStyle(.green, .red)
-                            } else {
-                                Image(.tomatoRotten)
-                                    .symbolRenderingMode(.monochrome)
-                                    .foregroundStyle(.green)
+                // A grid keeps both scores aligned, whatever the width of each icon
+                Grid(alignment: .leading, horizontalSpacing: gridColumnSpacing) {
+                    if criticRating > -1 {
+                        GridRow {
+                            Group {
+                                if criticRating >= 60 {
+                                    Image(.tomatoFresh)
+                                        .symbolRenderingMode(.multicolor)
+                                        .foregroundStyle(.green, .red)
+                                } else {
+                                    Image(.tomatoRotten)
+                                        .symbolRenderingMode(.monochrome)
+                                        .foregroundStyle(.green)
+                                }
                             }
-                        }
-                        .font(.largeTitle)
-
-                        // swiftlint:disable:next hard_coded_display_string
-                        Text("\(criticRating, specifier: "%.0f")")
-                            .fontWeight(.semibold)
-                    }
-                }
-
-                if communityRating > -1 {
-                    HStack {
-                        Image(systemName: "star.fill")
-                            .symbolRenderingMode(.multicolor)
-                            .foregroundStyle(.yellow)
                             .font(.largeTitle)
+                            .gridColumnAlignment(.center)
 
-                        // swiftlint:disable:next hard_coded_display_string
-                        Text("\(communityRating, specifier: "%.1f")")
-                            .fontWeight(.semibold)
+                            // swiftlint:disable:next hard_coded_display_string
+                            Text("\(criticRating, specifier: "%.0f")")
+                                .fontWeight(.semibold)
+                        }
+                    }
+
+                    if communityRating > -1 {
+                        GridRow {
+                            Image(systemName: "star.fill")
+                                .symbolRenderingMode(.multicolor)
+                                .foregroundStyle(.yellow)
+                                .font(.largeTitle)
+
+                            // swiftlint:disable:next hard_coded_display_string
+                            Text("\(communityRating, specifier: "%.1f")")
+                                .fontWeight(.semibold)
+                        }
                     }
                 }
             }
             .aspectRatio(1, contentMode: .fit)
         }
 
+        private var gridColumnSpacing: CGFloat {
+            viewLayout.value(standard: 12, large: 24)
+        }
+
         private var cardHeight: CGFloat {
-            viewLayout.value(standard: 200, large: 400)
+            viewLayout.value(standard: 200, large: 300)
         }
 
         private let cardAspectRatio: CGFloat = 1.77

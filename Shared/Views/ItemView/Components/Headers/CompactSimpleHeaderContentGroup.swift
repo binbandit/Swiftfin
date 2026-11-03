@@ -43,9 +43,7 @@ extension ItemView {
                 .subtleShadow()
 
                 VStack(alignment: .center, spacing: 5) {
-                    if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
-                        ParentButton(title: parentTitle, id: parentID)
-                    }
+                    ParentButtons(item: provider.item)
 
                     Text(provider.item.displayTitle)
                         .font(.title2)

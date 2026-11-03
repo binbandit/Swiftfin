@@ -208,6 +208,9 @@ struct ItemActionButtons: View {
                 }
             }
             .frame(height: viewLayout.controlHeight)
+            // Entering the bar from Play lands on its lead button, not whichever sits under Play's center
+            .focusSection()
+            .defaultFocus(focusedButton, buttons.first?.id ?? ItemView.Component.menu, priority: .userInitiated)
             .environmentObject(provider)
             .buttonBorderShape(.capsule)
             .buttonStyle(BasicHoverButtonStyle())

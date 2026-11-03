@@ -116,9 +116,7 @@ extension ItemView {
 
             private var title: some View {
                 VStack(alignment: .leading) {
-                    if let parentID = provider.item.parentRootID, let parentTitle = provider.item.parentTitle {
-                        ParentButton(title: parentTitle, id: parentID)
-                    }
+                    ParentButtons(item: provider.item)
 
                     logo
                 }
