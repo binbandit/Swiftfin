@@ -648,6 +648,10 @@ internal enum L10n {
   }
   /// Duration
   internal static let duration = L10n.tr("Localizable", "duration", fallback: "Duration")
+  /// %1$@ left - Playback time remaining under the play button, such as 4m left
+  internal static func durationLeft(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "durationLeft", String(describing: p1), fallback: "%1$@ left")
+  }
   /// DVD
   internal static let dvd = L10n.tr("Localizable", "dvd", fallback: "DVD")
   /// Edit
@@ -1316,6 +1320,10 @@ internal enum L10n {
   internal static let playDefaultTrackDescription = L10n.tr("Localizable", "playDefaultTrackDescription", fallback: "Always plays the first track marked as Default, even if not in your language.")
   /// Played
   internal static let played = L10n.tr("Localizable", "played", fallback: "Played")
+  /// Play %1$@ - Play button title with a season and episode, such as Play S1:E1
+  internal static func playEpisode(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "playEpisode", String(describing: p1), fallback: "Play %1$@")
+  }
   /// Player
   internal static let player = L10n.tr("Localizable", "player", fallback: "Player")
   /// Buffering
@@ -1590,6 +1598,10 @@ internal enum L10n {
   internal static let restoringMessage = L10n.tr("Localizable", "restoringMessage", fallback: "The server is restarting to restore from this backup. You may need to log back in when the restore completes.")
   /// Resume
   internal static let resume = L10n.tr("Localizable", "resume", fallback: "Resume")
+  /// Resume %1$@ - Play button title with a season and episode, such as Resume S9:E1
+  internal static func resumeEpisode(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "resumeEpisode", String(describing: p1), fallback: "Resume %1$@")
+  }
   /// Resume offset
   internal static let resumeOffset = L10n.tr("Localizable", "resumeOffset", fallback: "Resume offset")
   /// Resume content seconds before the recorded resume time.

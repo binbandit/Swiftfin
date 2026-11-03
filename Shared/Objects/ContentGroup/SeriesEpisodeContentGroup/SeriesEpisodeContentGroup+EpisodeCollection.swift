@@ -65,25 +65,46 @@ extension SeriesEpisodeContentGroup {
 
         @OptionalSharedBaseItem
         var playButtonItem: BaseItemDto?
+        let excludedEpisodeID: String?
         let header: Header
 
         init(
             seasonViewModel: PagingLibraryViewModel<EpisodeLibrary>,
             playButtonItem: BaseItemDto?,
+            excludedEpisodeID: String?,
             @ViewBuilder header: () -> Header
         ) {
             self.seasonViewModel = seasonViewModel
             self.playButtonItem = playButtonItem
+            self.excludedEpisodeID = excludedEpisodeID
             self.header = header()
+        }
+
+        private var episodes: [ItemEntry] {
+            seasonViewModel.elements.filter { $0.itemID != excludedEpisodeID }
+        }
+
+        /// The episode after the excluded one, or the one before it when the excluded episode ends the season
+        private var excludedEpisodeNeighborID: String? {
+            let elements = seasonViewModel.elements
+
+            guard let index = elements.firstIndex(where: { $0.itemID == excludedEpisodeID }) else { return nil }
+
+            return (elements[safe: index + 1] ?? elements[safe: index - 1])?.itemID
+        }
+
+        /// An episode's own page has nothing to list when its season holds no other episodes
+        private var isEmptyWithoutExcludedEpisode: Bool {
+            excludedEpisodeID != nil && seasonViewModel.state == .content && episodes.isEmpty
         }
 
         private var elements: [EpisodeElement] {
             switch seasonViewModel.state {
             case .content:
-                if seasonViewModel.elements.isEmpty {
+                if episodes.isEmpty {
                     [.empty]
                 } else {
-                    seasonViewModel.elements.map(EpisodeElement.episode)
+                    episodes.map(EpisodeElement.episode)
                 }
 
             case .error:
@@ -101,21 +122,23 @@ extension SeriesEpisodeContentGroup {
                 return playButtonItemID
             }
 
-            return elements.first?.id
+            return excludedEpisodeNeighborID ?? elements.first?.id
         }
 
         var body: some View {
-            EpisodeCollectionLayout(
-                elements: elements,
-                preferredElementID: preferredElementID
-            ) {
-                header
-            } content: { element in
-                EpisodeElementCard(element: element) {
-                    seasonViewModel.refresh()
+            if !isEmptyWithoutExcludedEpisode {
+                EpisodeCollectionLayout(
+                    elements: elements,
+                    preferredElementID: preferredElementID
+                ) {
+                    header
+                } content: { element in
+                    EpisodeElementCard(element: element) {
+                        seasonViewModel.refresh()
+                    }
                 }
+                .scrollDisabled(seasonViewModel.state != .content)
             }
-            .scrollDisabled(seasonViewModel.state != .content)
         }
     }
 

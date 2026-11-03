@@ -59,19 +59,27 @@ extension SeriesEpisodeContentGroup {
         }
 
         var largeView: some View {
-            ScrollView(.horizontal) {
-                SelectionTrack(
-                    seasons,
-                    selection: selection,
-                    focus: $focusedSeason
-                ) { season in
-                    openEpisodes(for: season)
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal) {
+                    SelectionTrack(
+                        seasons,
+                        selection: selection,
+                        focus: $focusedSeason
+                    ) { season in
+                        openEpisodes(for: season)
+                    }
+                    .controlSize(.large)
+                    .edgePadding(.horizontal)
                 }
-                .controlSize(.large)
-                .edgePadding(.horizontal)
+                .scrollIndicators(.hidden)
+                .scrollClipDisabled()
+                .onAppear {
+                    // Focus only scrolls the track once it moves here, so reveal an off screen selection up front
+                    if let preferredSelection {
+                        proxy.scrollTo(preferredSelection, anchor: .center)
+                    }
+                }
             }
-            .scrollIndicators(.hidden)
-            .scrollClipDisabled()
             .focusSection()
             .defaultFocus(
                 $focusedSeason,

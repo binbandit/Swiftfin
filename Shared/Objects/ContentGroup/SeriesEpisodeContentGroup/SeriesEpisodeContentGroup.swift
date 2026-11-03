@@ -17,6 +17,8 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
     let id: String
     @OptionalSharedBaseItem
     var playButtonItem: BaseItemDto?
+    /// Left out of the episodes, such as the episode whose page shows this group
+    let excludedEpisodeID: String?
     let viewModel: PagingLibraryViewModel<SeasonViewModelLibrary>
 
     var _shouldBeResolved: Bool {
@@ -25,17 +27,20 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
 
     init(
         parent: BaseItemDto,
-        playButtonItem: BaseItemDto? = nil
+        playButtonItem: BaseItemDto? = nil,
+        excludedEpisodeID: String? = nil
     ) {
         self.id = "\(parent.id ?? "parent")-episode-selector"
         self.playButtonItem = playButtonItem
+        self.excludedEpisodeID = excludedEpisodeID
         self.viewModel = .init(library: SeasonViewModelLibrary(parent: parent), pageSize: 100)
     }
 
     func body(with viewModel: PagingLibraryViewModel<SeasonViewModelLibrary>) -> Body {
         Body(
             viewModel: viewModel,
-            playButtonItem: playButtonItem
+            playButtonItem: playButtonItem,
+            excludedEpisodeID: excludedEpisodeID
         )
     }
 
@@ -46,6 +51,7 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
 
         @OptionalSharedBaseItem
         var playButtonItem: BaseItemDto?
+        let excludedEpisodeID: String?
 
         @State
         private var selection: PagingLibraryViewModel<EpisodeLibrary>.ID?
@@ -89,7 +95,8 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
                 if let selectedSeasonViewModel {
                     SeasonEpisodesView(
                         seasonViewModel: selectedSeasonViewModel,
-                        playButtonItem: playButtonItem
+                        playButtonItem: playButtonItem,
+                        excludedEpisodeID: excludedEpisodeID
                     ) {
                         seasonSelectorView
                     }

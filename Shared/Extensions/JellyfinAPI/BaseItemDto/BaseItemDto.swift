@@ -609,11 +609,13 @@ extension BaseItemDto {
             return L10n.missing
         }
 
-        if let progressLabel {
-            return progressLabel
+        let isResumable = (userData?.playbackPositionTicks ?? 0) > 0
+
+        if type == .episode, let seasonEpisodeLabel {
+            return isResumable ? L10n.resumeEpisode(seasonEpisodeLabel) : L10n.playEpisode(seasonEpisodeLabel)
         }
 
-        return L10n.play
+        return isResumable ? L10n.resume : L10n.play
     }
 
     /// Label for the parent's type

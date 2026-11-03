@@ -131,6 +131,20 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
                 playButtonItem: playbackIntent?.item
             )
 
+        case .episode:
+            if let seasonID = item.seasonID {
+                SeriesEpisodeContentGroup(
+                    parent: BaseItemDto(
+                        id: seasonID,
+                        name: item.seasonName,
+                        seriesID: item.seriesID,
+                        seriesName: item.seriesName,
+                        type: .season
+                    ),
+                    excludedEpisodeID: itemID
+                )
+            }
+
         default:
             []
         }
@@ -227,33 +241,6 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
 
         default:
             []
-        }
-
-        if item.type == .episode {
-            PosterGroup(
-                library: StaticMediaLibrary(
-                    title: L10n.season,
-                    id: "seasons",
-                    elements: [BaseItemDto(
-                        id: item.seasonID,
-                        imageTags: item.parentPrimaryImageItemID == item.seasonID
-                            ? item.parentPrimaryImageTag.map { [ImageType.primary.rawValue: $0] }
-                            : nil,
-                        name: item.seasonName,
-                        parentBackdropImageTags: item.parentBackdropImageTags,
-                        parentBackdropItemID: item.parentBackdropItemID,
-                        parentThumbImageTag: item.parentThumbImageTag,
-                        parentThumbItemID: item.parentThumbItemID,
-                        seriesID: item.seriesID,
-                        seriesName: item.seriesName,
-                        seriesPrimaryImageTag: item.seriesPrimaryImageTag,
-                        seriesThumbImageTag: item.seriesThumbImageTag,
-                        type: .season
-                    )]
-                ),
-                posterSize: .small,
-                environment: .init(isHeaderButtonEnabled: false)
-            )
         }
 
         if let castAndCrew = item.mergedPeople, castAndCrew.isNotEmpty {
