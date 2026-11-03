@@ -56,6 +56,9 @@ struct NavigationInjectionView: View {
                 }
         }
         .trackingFrame(for: .navigationStack)
+        #if os(tvOS)
+        .modifier(HiddenUnderPushModifier(coordinator: coordinator))
+        #endif
         .environment(
             \.router,
             .init(
@@ -74,7 +77,17 @@ struct NavigationInjectionView: View {
                 presentedRoute.route.destination
             }
             .transformEnvironment(\.frameForParentView) { $0[.tabView] = nil }
-            .background(.regularMaterial)
+            // A sheet floats over the page beneath it.
+            .if(!presentedRoute.route.isPush) { view in
+                view.background(.regularMaterial)
+            }
+            // A push replaces the page beneath it, which hides. Dismissing through state
+            // brings that page back as the push fades out, rather than after.
+            .if(presentedRoute.route.isPush) { view in
+                view.onExitCommand {
+                    coordinator.presentedSheet = nil
+                }
+            }
         }
         .fullScreenCover(
             item: $coordinator.presentedFullScreen
@@ -133,3 +146,21 @@ struct NavigationInjectionView: View {
         #endif
     }
 }
+
+#if os(tvOS)
+/// tvOS presents a push over the page that it replaces, so hide that page underneath,
+/// leaving the pushed page on the same app background as the root.
+struct HiddenUnderPushModifier: ViewModifier {
+
+    @ObservedObject
+    var coordinator: NavigationCoordinator
+
+    func body(content: Content) -> some View {
+        content
+            .animation(.easeInOut(duration: 0.3)) { page in
+                page
+                    .opacity(coordinator.isPresentingPush ? 0 : 1)
+            }
+    }
+}
+#endif

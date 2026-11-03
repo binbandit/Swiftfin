@@ -85,6 +85,11 @@ final class FocusCoordinator: ObservableObject {
             if pendingInitialFocusID == id {
                 resolveInitialFocus()
             }
+
+            // Fulfilled, so the target can't take focus back when it reappears.
+            if request?.id == id {
+                request = nil
+            }
         } else {
             focusedIDs.remove(id)
         }

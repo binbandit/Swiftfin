@@ -202,12 +202,7 @@ private struct UserViewLibraryGridElement: View {
                     titleLabelOverlay(with: DefaultPlaceholderView(blurHash: imageSource.blurHash))
                 }
                 .failure {
-                    Color.secondarySystemFill
-                        .opacity(0.75)
-                        .overlay {
-                            titleLabel
-                                .foregroundStyle(.primary)
-                        }
+                    titleLabelOverlay(with: Color.secondarySystemFill)
                 }
                 .id(imageSources.hashValue)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -236,11 +231,13 @@ private struct UserViewLibraryGridElement: View {
         ZStack {
             content
 
+            // Keeps the white title readable over light artwork and the plain fallback alike.
             Color.black
-                .opacity(0.5)
+                .opacity(0.6)
 
             titleLabel
                 .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.5), radius: 8)
         }
     }
 

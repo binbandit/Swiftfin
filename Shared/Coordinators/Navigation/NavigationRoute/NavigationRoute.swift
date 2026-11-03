@@ -44,6 +44,14 @@ struct NavigationRoute: Identifiable, Hashable {
         }
     }
 
+    var isPush: Bool {
+        if case .push = transitionStyle {
+            true
+        } else {
+            false
+        }
+    }
+
     init(
         id: String,
         style: TransitionStyle = .push(.automatic),

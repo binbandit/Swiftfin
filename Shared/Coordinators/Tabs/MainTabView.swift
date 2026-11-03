@@ -139,6 +139,10 @@ struct MainTabView: View {
                 }
             }
             #if os(tvOS)
+            // Pushes are presented over the whole tab view, so hide the sidebar along with the page.
+            .ifLet(tabCoordinator.tabs.first(property: \.item.id, equalTo: tabCoordinator.selectedTabID)) { view, tab in
+                view.modifier(HiddenUnderPushModifier(coordinator: tab.coordinator))
+            }
             .background(alignment: .top) {
                 FocusedPosterCinematicBackgroundView()
             }

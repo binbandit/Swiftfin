@@ -29,6 +29,13 @@ final class NavigationCoordinator: ObservableObject {
     @Published
     var presentedFullScreen: PresentedRoute?
 
+    #if os(tvOS)
+    /// tvOS presents pushes over the current page, so the page hides as it would under a native push.
+    var isPresentingPush: Bool {
+        presentedSheet?.route.isPush == true
+    }
+    #endif
+
     func push(
         _ route: NavigationRoute
     ) {
