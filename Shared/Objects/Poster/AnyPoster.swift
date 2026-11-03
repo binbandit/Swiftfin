@@ -76,6 +76,10 @@ struct AnyPoster: Poster {
         _poster.displayTitle
     }
 
+    var artworkTitle: String {
+        _poster.artworkTitle
+    }
+
     var subtitle: String? {
         _poster.subtitle
     }

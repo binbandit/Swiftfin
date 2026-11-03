@@ -41,6 +41,16 @@ extension BaseItemDto: Poster {
         type?.preferredPosterDisplayType ?? .portrait
     }
 
+    /// Seasons and episodes are identified by their series, like the Apple TV app.
+    var artworkTitle: String {
+        switch type {
+        case .episode, .season:
+            seriesName?.nilIfBlank ?? displayTitle
+        default:
+            displayTitle
+        }
+    }
+
     var subtitle: String? {
         switch type {
         case .episode:

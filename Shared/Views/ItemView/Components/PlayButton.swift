@@ -123,10 +123,13 @@ extension PlayButton {
 
 private extension BaseItemDto {
 
-    /// Time remaining in a partly watched item, such as "4m left", matching the poster progress badges
+    /// Time remaining in a partly watched item, such as "4 min left", matching the poster labels
     var timeLeftLabel: String? {
-        guard currentProgram == nil, (userData?.playbackPositionTicks ?? 0) > 0, let progressLabel else { return nil }
+        guard currentProgram == nil,
+              let runtime,
+              let position = startSeconds,
+              position > .zero, position < runtime else { return nil }
 
-        return L10n.durationLeft(progressLabel)
+        return (runtime - position).formatted(.timeLeft)
     }
 }

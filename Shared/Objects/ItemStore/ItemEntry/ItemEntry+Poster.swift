@@ -17,6 +17,10 @@ extension ItemEntry: @MainActor Poster {
         snapshot.displayTitle
     }
 
+    var artworkTitle: String {
+        snapshot.artworkTitle
+    }
+
     var systemImage: String {
         snapshot.systemImage
     }

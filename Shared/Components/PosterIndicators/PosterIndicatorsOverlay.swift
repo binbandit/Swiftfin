@@ -112,7 +112,6 @@ struct PosterIndicatorsOverlay: View {
 
             if showsProgressIndicator {
                 ProgressIndicator(
-                    title: item.progressLabel ?? "",
                     progress: item.progressPercentage ?? 0,
                     posterDisplayType: posterDisplayType
                 ) {

@@ -33,6 +33,12 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     @FocusState
     private var focusedSection: FocusSection?
 
+    #if os(tvOS)
+    /// Keeps the header focusable while its library is open, so focus can return to it.
+    @State
+    private var restoresHeaderFocus = false
+    #endif
+
     @ObservedObject
     var viewModel: PagingLibraryViewModel<Library>
 
@@ -42,6 +48,9 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
     let group: PosterGroup<Library>
 
     private func routeToLibrary() {
+        #if os(tvOS)
+        restoresHeaderFocus = true
+        #endif
         router.route(to: .library(library: viewModel.library, displayTitle: group.displayTitle))
     }
 
@@ -106,6 +115,15 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .focusSection()
                 .focused($focusedSection, equals: .header)
+                #if os(tvOS)
+                // Reached by moving up from this row's posters, so moving between rows always lands on posters.
+                .disabled(focusedSection == nil && !restoresHeaderFocus)
+                .onChange(of: focusedSection) {
+                    if focusedSection != nil {
+                        restoresHeaderFocus = false
+                    }
+                }
+                #endif
         } else {
             header
                 .frame(maxWidth: .infinity, alignment: .leading)

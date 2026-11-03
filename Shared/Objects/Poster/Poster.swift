@@ -22,6 +22,9 @@ protocol Poster: Displayable, Hashable, Identifiable, SystemImageable {
 
     var preferredPosterDisplayType: PosterDisplayType { get }
 
+    /// The title that identifies the poster's artwork, such as the series of an episode
+    var artworkTitle: String { get }
+
     /// Optional subtitle when used as a poster
     var subtitle: String? { get }
 
@@ -101,6 +104,10 @@ extension Poster {
         default:
             preferredPosterDisplayType
         }
+    }
+
+    var artworkTitle: String {
+        displayTitle
     }
 
     var subtitle: String? {

@@ -35,6 +35,14 @@ struct BaseItemDtoPosterLabel: View {
         return item.seasonEpisodeLabel ?? item.episodeLocator
     }
 
+    /// The item's own title, listed below an artwork title such as its series.
+    /// A card being resumed lists its time left instead, keeping the line short.
+    private var itemTitle: String? {
+        guard isTitlePresented, item.artworkTitle != item.displayTitle, remainingTime == nil else { return nil }
+
+        return item.displayTitle
+    }
+
     private var subtitle: String? {
         guard let subtitle = item.posterSubtitle(using: posterConfiguration.subtitleField),
               item.extraType != nil || subtitle != item.displayTitle else { return nil }
@@ -42,12 +50,23 @@ struct BaseItemDtoPosterLabel: View {
         return subtitle
     }
 
+    /// Landscape cards list the time left here instead of over their artwork.
+    private var remainingTime: String? {
+        guard posterDisplayType == .landscape,
+              posterConfiguration.indicators.contains(.progress),
+              let runtime = item.runtime,
+              let position = item.startSeconds,
+              position > .zero, position < runtime else { return nil }
+
+        return (runtime - position).formatted(.timeLeft)
+    }
+
     private var isProgram: Bool {
         item.type == .program || item.type == .liveTvProgram || item.type == .tvProgram
     }
 
     private var hasSubtitle: Bool {
-        isProgram || episodeLocator != nil || subtitle != nil
+        isProgram || episodeLocator != nil || itemTitle != nil || subtitle != nil || remainingTime != nil
     }
 
     @ViewBuilder
@@ -99,8 +118,17 @@ struct BaseItemDtoPosterLabel: View {
                         .layoutPriority(1)
                 }
 
+                if let itemTitle {
+                    Text(itemTitle)
+                }
+
                 if let subtitle {
                     Text(subtitle)
+                }
+
+                if let remainingTime {
+                    Text(remainingTime)
+                        .layoutPriority(1)
                 }
             }
         }
@@ -118,7 +146,7 @@ struct BaseItemDtoPosterLabel: View {
             if isTitlePresented || hasSubtitle {
                 VStack(alignment: .leading, spacing: 2) {
                     if isTitlePresented {
-                        Text(item.displayTitle)
+                        Text(item.artworkTitle)
                             .font(.footnote)
                             .multilineTextAlignment(.leading)
                             .lineLimit(hasSubtitle ? 1 : 2, reservesSpace: true)

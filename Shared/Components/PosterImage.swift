@@ -70,7 +70,8 @@ struct PosterImage<Element: Poster>: View {
                         }
                     }
                     .failure {
-                        SystemImageContentView(
+                        MissingArtworkView(
+                            title: element.artworkTitle,
                             systemName: element.systemImage
                         )
                     }
@@ -89,5 +90,44 @@ extension PosterImage {
 
     func pipeline(_ pipeline: ImagePipeline) -> Self {
         copy(modifying: \.pipeline, with: pipeline)
+    }
+}
+
+/// Stands in for artwork an item doesn't have: a dark card with a typeset title, so the item stays identifiable
+/// without its label and doesn't read as still loading. Thumbnails too small to read a title show the item's symbol.
+private struct MissingArtworkView: View {
+
+    private static let minimumTitledLength: CGFloat = 100
+
+    let title: String
+    let systemName: String
+
+    var body: some View {
+        AlternateLayoutView {
+            Color.clear
+        } content: { size in
+            let length = min(size.width, size.height)
+
+            if length < Self.minimumTitledLength {
+                SystemImageContentView(systemName: systemName)
+            } else {
+                Text(title)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
+                    .minimumScaleFactor(0.75)
+                    .padding(length * 0.12)
+                    .accessibilityHidden(true)
+            }
+        }
+        .background {
+            LinearGradient(
+                colors: [Color(white: 0.24), Color(white: 0.11)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        .environment(\.colorScheme, .dark)
     }
 }

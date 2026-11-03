@@ -9,6 +9,8 @@
 import Defaults
 import SwiftUI
 
+/// Draws progress along the bottom of a poster. Landscape cards list the remaining time in their label instead,
+/// so no text covers the artwork.
 struct ProgressIndicator: View {
 
     @AdaptiveLayout
@@ -17,19 +19,16 @@ struct ProgressIndicator: View {
     @Default(.accentColor)
     private var accentColor
 
-    let title: String
     let progress: Double
     let posterDisplayType: PosterDisplayType
 
     private let indicators: [QuadrantItem]
 
     init(
-        title: String,
         progress: Double,
         posterDisplayType: PosterDisplayType,
         @ArrayBuilder<QuadrantItem> indicators: () -> [QuadrantItem]
     ) {
-        self.title = title
         self.progress = progress
         self.posterDisplayType = posterDisplayType
         self.indicators = indicators()
@@ -62,61 +61,20 @@ struct ProgressIndicator: View {
             .accessibilityHidden(true)
     }
 
-    private var runtime: some View {
-        Text(title)
-            .font(.system(.footnote, design: .rounded, weight: .semibold))
-            .monospacedDigit()
-            .foregroundStyle(.white)
-            .lineLimit(1)
-            .padding(.horizontal, viewLayout.value(standard: 8, large: 12))
-            .padding(.vertical, viewLayout.value(standard: 3, large: 5))
-            .background(.black.opacity(0.72), in: Capsule())
-            .overlay {
-                Capsule().strokeBorder(.white.opacity(0.18), lineWidth: 0.5)
-            }
-    }
-
-    private var indicatorTrack: some View {
-        Quadrant(.bottomTrailing, isFloating: true) {
-            indicators
-        }
-    }
-
-    private func landscapeView(showsIndicators: Bool) -> some View {
-        VStack(spacing: inset) {
-            HStack(spacing: inset) {
-                runtime
-
-                Spacer(minLength: 0)
-
-                if showsIndicators {
-                    indicatorTrack
-                }
-            }
-            .padding(.horizontal, inset)
-
-            progressBar
-        }
-    }
-
-    private func compactView(showsIndicators: Bool) -> some View {
-        VStack(alignment: .trailing, spacing: inset) {
-            if showsIndicators {
-                indicatorTrack
-                    .padding(.horizontal, inset)
-            }
-
-            // Badges sit above the bar so progress uses the full poster width.
-            compactProgressBar
-        }
-    }
-
     var body: some View {
-        Group {
+        VStack(alignment: .trailing, spacing: inset) {
+            if indicators.isNotEmpty {
+                Quadrant(.bottomTrailing, isFloating: true) {
+                    indicators
+                }
+                .padding(.horizontal, inset)
+            }
+
+            // Badges sit above the bar so it can span the poster.
             if posterDisplayType == .landscape {
-                landscapeView(showsIndicators: !indicators.isEmpty)
+                progressBar
             } else {
-                compactView(showsIndicators: !indicators.isEmpty)
+                compactProgressBar
             }
         }
         .background {
