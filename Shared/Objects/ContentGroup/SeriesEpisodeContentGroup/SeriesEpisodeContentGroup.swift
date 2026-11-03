@@ -17,7 +17,7 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
     let id: String
     @OptionalSharedBaseItem
     var playButtonItem: BaseItemDto?
-    /// Left out of the episodes, such as the episode whose page shows this group
+    /// The episode whose page shows this group. It is left out, and the row takes a heading instead of a season picker
     let excludedEpisodeID: String?
     let viewModel: PagingLibraryViewModel<SeasonViewModelLibrary>
 
@@ -60,12 +60,22 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
             viewModel.elements.first { $0.id == selection }
         }
 
-        private var seasonSelectorView: some View {
-            SeasonSelector(
-                selection: $selection,
-                seasons: Array(viewModel.elements),
-                preferredSelection: selection ?? preferredSeasonSelection()
-            )
+        @ViewBuilder
+        private var header: some View {
+            if excludedEpisodeID != nil, let season = viewModel.elements.first {
+                // An episode's page shows only its own season, so a picker would offer a single choice
+                Text(L10n.moreFromSeason(season.library.parent.displayTitle))
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .accessibilityAddTraits(.isHeader)
+                    .edgePadding(.horizontal)
+            } else {
+                SeasonSelector(
+                    selection: $selection,
+                    seasons: Array(viewModel.elements),
+                    preferredSelection: selection ?? preferredSeasonSelection()
+                )
+            }
         }
 
         private func preferredSeasonSelection() -> PagingLibraryViewModel<EpisodeLibrary>.ID? {
@@ -98,11 +108,11 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
                         playButtonItem: playButtonItem,
                         excludedEpisodeID: excludedEpisodeID
                     ) {
-                        seasonSelectorView
+                        header
                     }
                 } else {
                     LoadingEpisodesView {
-                        seasonSelectorView
+                        header
                     }
                 }
             }

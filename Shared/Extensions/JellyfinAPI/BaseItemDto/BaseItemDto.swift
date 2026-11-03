@@ -595,7 +595,8 @@ extension BaseItemDto {
         }
     }
 
-    var playButtonLabel: String {
+    /// - Parameter namesEpisode: Adds the season and episode, for pages that play one of their episodes
+    func playButtonLabel(namesEpisode: Bool) -> String {
 
         if isUnaired {
             return L10n.unaired
@@ -611,7 +612,7 @@ extension BaseItemDto {
 
         let isResumable = (userData?.playbackPositionTicks ?? 0) > 0
 
-        if type == .episode, let seasonEpisodeLabel {
+        if namesEpisode, type == .episode, let seasonEpisodeLabel {
             return isResumable ? L10n.resumeEpisode(seasonEpisodeLabel) : L10n.playEpisode(seasonEpisodeLabel)
         }
 

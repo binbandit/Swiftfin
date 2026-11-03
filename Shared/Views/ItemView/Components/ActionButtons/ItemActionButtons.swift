@@ -14,6 +14,8 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
     @AdaptiveLayout
     private var viewLayout
 
+    @Environment(\.isFocused)
+    private var isFocused
     @Environment(\.isSelected)
     private var isSelected
 
@@ -23,20 +25,25 @@ private struct ItemActionButtonLabelStyle: LabelStyle {
         viewLayout.value(standard: 24, large: 40)
     }
 
+    private var activeSelectionColor: Color? {
+        isSelected ? activeColor : nil
+    }
+
+    // Focus brightens the button like the Play button's focused glass, keeping an active state's color on the glyph
     private var tint: Color {
-        guard isSelected, let activeColor else {
-            return .gray.opacity(0.15)
+        if isFocused {
+            return .white
         }
 
-        return activeColor
+        return activeSelectionColor ?? .gray.opacity(0.15)
     }
 
     private var foregroundColor: Color {
-        guard isSelected, let activeColor else {
-            return .primary
+        if isFocused {
+            return activeSelectionColor ?? .black
         }
 
-        return activeColor.overlayColor
+        return activeSelectionColor?.overlayColor ?? .primary
     }
 
     func makeBody(configuration: Configuration) -> some View {
@@ -179,15 +186,54 @@ struct ItemActionButtons: View {
         .foregroundStyle(.primary, .secondary)
     }
 
-    var body: some View {
-        let hasBarMenu = viewLayout.isLarge && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty)
+    private var hasBarMenu: Bool {
+        viewLayout.isLarge && (overflowButtons.isNotEmpty || menuButtons.isNotEmpty)
+    }
 
+    #if os(tvOS)
+    /// The space below the row that a focused button's caption covers without moving the layout
+    static var focusedCaptionHeight: CGFloat {
+        FocusedCaption.height
+    }
+
+    /// What the focused button does, which its icon alone doesn't say
+    private func caption(for button: ItemActionButton) -> String {
+        switch button {
+        case .played:
+            provider.item.userData?.isPlayed == true ? L10n.markAsUnplayed : L10n.markAsPlayed
+        case .favorited:
+            provider.item.userData?.isFavorite == true ? L10n.removeFromFavorites : L10n.addToFavorites
+        default:
+            button.displayTitle
+        }
+    }
+
+    /// Captions at either end align with the row's edges so they stay inside the header's column
+    private func captionAlignment(for id: String) -> HorizontalAlignment {
+        let ids = buttons.map(\.id) + (hasBarMenu ? [ItemView.Component.menu] : [])
+
+        if id == ids.first {
+            return .leading
+        }
+
+        return id == ids.last ? .trailing : .center
+    }
+    #endif
+
+    var body: some View {
         if buttons.isNotEmpty || hasBarMenu {
             HStack(alignment: .center, spacing: viewLayout.value(standard: 8, large: 24)) {
                 ForEach(buttons) { button in
                     Self.view(for: button)
                         .labelStyle(ItemActionButtonLabelStyle(activeColor: button.activeColor))
                         .focused(focusedButton, equals: button.id)
+                        #if os(tvOS)
+                        .modifier(FocusedCaption(
+                            title: caption(for: button),
+                            isFocused: focusedButton.wrappedValue == button.id,
+                            alignment: captionAlignment(for: button.id)
+                        ))
+                        #endif
                 }
 
                 if hasBarMenu {
@@ -198,13 +244,20 @@ struct ItemActionButtons: View {
                             menuButtons: menuButtons
                         )
                     } label: {
-                        Label(L10n.menu, systemImage: "ellipsis")
+                        Label(L10n.more, systemImage: "ellipsis")
                     }
                     .menuStyle(.button)
                     .labelStyle(ItemActionButtonLabelStyle())
                     .symbolRenderingMode(.monochrome)
                     .foregroundStyle(.primary, .secondary)
                     .focused(focusedButton, equals: ItemView.Component.menu)
+                    #if os(tvOS)
+                    .modifier(FocusedCaption(
+                        title: L10n.more,
+                        isFocused: focusedButton.wrappedValue == ItemView.Component.menu,
+                        alignment: captionAlignment(for: ItemView.Component.menu)
+                    ))
+                    #endif
                 }
             }
             .frame(height: viewLayout.controlHeight)
@@ -275,3 +328,38 @@ extension ItemActionButtons {
         }
     }
 }
+
+#if os(tvOS)
+/// Names a focused icon-only button beneath it, like the Apple TV app
+private struct FocusedCaption: ViewModifier {
+
+    private static let spacing: CGFloat = 14
+
+    static var height: CGFloat {
+        UIFont.preferredFont(forTextStyle: .caption1).lineHeight + spacing
+    }
+
+    let title: String
+    let isFocused: Bool
+    let alignment: HorizontalAlignment
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: Alignment(horizontal: alignment, vertical: .bottom)) {
+                ZStack {
+                    if isFocused {
+                        Text(title)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .lineLimit(1)
+                            .fixedSize()
+                            .transition(.opacity)
+                    }
+                }
+                .alignmentGuide(.bottom) { $0[.top] - Self.spacing }
+                .animation(.easeOut(duration: 0.15), value: isFocused)
+                .accessibilityHidden(true)
+            }
+    }
+}
+#endif

@@ -86,7 +86,11 @@ extension ItemView {
                         .frame(maxWidth: viewLayout.value(standard: 300, large: 450), alignment: .leading)
                         .if(viewLayout.isLarge) { buttons in
                             buttons
-                                .padding(.vertical)
+                                .padding(.top)
+                                #if os(tvOS)
+                                // Leaves room for the focused action's caption above the attributes
+                                .padding(.bottom, ItemActionButtons.focusedCaptionHeight)
+                                #endif
                         }
 
                         ItemView.AttributesHStack(

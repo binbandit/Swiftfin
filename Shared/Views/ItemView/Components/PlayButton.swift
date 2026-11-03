@@ -13,12 +13,6 @@ import SwiftUI
 
 struct PlayButton: View {
 
-    @AdaptiveLayout
-    private var viewLayout
-
-    @Default(.accentColor)
-    private var accentColor
-
     @ObservedObject
     var provider: ItemContentGroupProvider
 
@@ -26,7 +20,10 @@ struct PlayButton: View {
     private var playMedia
 
     private var title: String {
-        provider.playbackIntent?.item.playButtonLabel ?? L10n.play
+        guard let item = provider.playbackIntent?.item else { return L10n.play }
+
+        // Series and season pages say which episode plays, while an episode's own page already does
+        return item.playButtonLabel(namesEpisode: item.id != provider.item.id)
     }
 
     private func play(fromBeginning: Bool = false) {
@@ -47,24 +44,12 @@ struct PlayButton: View {
             play()
         } label: {
             Label(title, systemImage: "play.fill")
-                .labelStyle(.leadingIcon)
-                .controlSize(viewLayout.value(standard: .regular, large: .large))
                 .lineLimit(1)
-                .font(.callout)
-                .fontWeight(.semibold)
-                .padding(.horizontal)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .backport
-                .glassEffect(
-                    .regular.selection(
-                        tint: accentColor,
-                        foregroundColor: accentColor.overlayColor
-                    ),
-                    in: .capsule
-                )
         }
-        .buttonBorderShape(.capsule)
-        .buttonStyle(BasicHoverButtonStyle())
+        .fontWeight(.semibold)
+        .backport
+        .buttonStyle(.glassProminent.shadow(false))
         .accessibilityLabel(L10n.play)
         .accessibilityValue([title, provider.playbackIntent?.item.timeLeftLabel].compacted().joined(separator: ", "))
         .contextMenu {
@@ -129,7 +114,6 @@ extension PlayButton {
                 }
                 .font(.caption)
                 .fontWeight(.medium)
-                .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

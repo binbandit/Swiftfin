@@ -1120,6 +1120,12 @@ internal enum L10n {
   internal static let missingCodecValues = L10n.tr("Localizable", "missingCodecValues", fallback: "Missing codec values")
   /// Mixer
   internal static let mixer = L10n.tr("Localizable", "mixer", fallback: "Mixer")
+  /// More - Name of the button that opens more actions for an item
+  internal static let more = L10n.tr("Localizable", "more", fallback: "More")
+  /// More from %1$@ - Heading for the other episodes of a season on an episode page, such as More from Season 9
+  internal static func moreFromSeason(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "moreFromSeason", String(describing: p1), fallback: "More from %1$@")
+  }
   /// Movie
   internal static let movie = L10n.tr("Localizable", "movie", fallback: "Movie")
   /// Movies
@@ -1304,6 +1310,8 @@ internal enum L10n {
   internal static let playAndPause = L10n.tr("Localizable", "playAndPause", fallback: "Play / Pause")
   /// Playback
   internal static let playback = L10n.tr("Localizable", "playback", fallback: "Playback")
+  /// Playback options - Item action that picks the version, quality, audio, and subtitles
+  internal static let playbackOptions = L10n.tr("Localizable", "playbackOptions", fallback: "Playback options")
   /// Playback quality
   internal static let playbackQuality = L10n.tr("Localizable", "playbackQuality", fallback: "Playback quality")
   /// Force media from the server to transcode if it exceeds the selected resolution or bitrate.

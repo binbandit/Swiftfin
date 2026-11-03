@@ -32,7 +32,7 @@ enum ItemActionButton: String, CaseIterable, Displayable, Equatable, Identifiabl
         case .trailers:
             L10n.trailers
         case .playback:
-            L10n.playback
+            L10n.playbackOptions
         case .shuffle:
             L10n.shuffle
         case .record:
