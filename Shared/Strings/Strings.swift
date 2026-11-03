@@ -322,6 +322,8 @@ internal enum L10n {
   internal static let chapters = L10n.tr("Localizable", "chapters", fallback: "Chapters")
   /// Chapter slider
   internal static let chapterSlider = L10n.tr("Localizable", "chapterSlider", fallback: "Chapter slider")
+  /// Christmas
+  internal static let christmas = L10n.tr("Localizable", "christmas", fallback: "Christmas")
   /// Client
   internal static let client = L10n.tr("Localizable", "client", fallback: "Client")
   /// Clip
@@ -822,6 +824,8 @@ internal enum L10n {
   internal static let halfSideBySide = L10n.tr("Localizable", "halfSideBySide", fallback: "Half side-by-side")
   /// Half top and bottom
   internal static let halfTopAndBottom = L10n.tr("Localizable", "halfTopAndBottom", fallback: "Half top and bottom")
+  /// Halloween
+  internal static let halloween = L10n.tr("Localizable", "halloween", fallback: "Halloween")
   /// HWA
   internal static let hardwareAcceleration = L10n.tr("Localizable", "hardwareAcceleration", fallback: "HWA")
   /// Hearing impaired
@@ -836,6 +840,8 @@ internal enum L10n {
   internal static let hint = L10n.tr("Localizable", "hint", fallback: "Hint")
   /// History
   internal static let history = L10n.tr("Localizable", "history", fallback: "History")
+  /// Holidays - Home rows of seasonal titles, like Christmas
+  internal static let holidays = L10n.tr("Localizable", "holidays", fallback: "Holidays")
   /// Home
   internal static let home = L10n.tr("Localizable", "home", fallback: "Home")
   /// Horizontal pan

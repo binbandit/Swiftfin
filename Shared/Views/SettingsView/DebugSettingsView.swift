@@ -19,12 +19,15 @@ struct DebugSettingsView: View {
 
     @Default(.sendProgressReports)
     private var sendProgressReports
+    @Default(.previewHoliday)
+    private var previewHoliday
 
     var body: some View {
         Form(systemImage: "ladybug") {
 
             Section(L10n.settings) {
                 Toggle(L10n.sendProgressReports, isOn: $sendProgressReports)
+                Picker("Preview Holiday", selection: $previewHoliday)
             }
 
             Section("Device Details") {

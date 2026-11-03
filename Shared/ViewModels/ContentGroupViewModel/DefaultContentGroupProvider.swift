@@ -65,6 +65,17 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
             library: NextUpLibrary()
         )
 
+        if Defaults[.Customization.Home.showHolidays], let holiday = Holiday.current {
+            PosterGroup(
+                id: "holiday-\(holiday.rawValue)",
+                library: ItemLibrary(
+                    parent: BaseItemDto(name: holiday.displayTitle),
+                    filters: .init(sortBy: [.random]),
+                    staticFilters: .init(itemTypes: [.movie, .series], tags: holiday.tags)
+                )
+            )
+        }
+
         if Defaults[.Customization.Home.showRecentlyAdded] {
             #if os(tvOS)
             CinematicRecentlyAddedContentGroup(

@@ -238,6 +238,10 @@ extension Defaults.Keys {
             static var showRecentlyPlayed: Key<Bool> {
                 UserKey("showRecentlyPlayed", default: false)
             }
+
+            static var showHolidays: Key<Bool> {
+                UserKey("homeShowHolidays", default: true)
+            }
         }
 
         enum Search {
@@ -453,5 +457,8 @@ extension Defaults.Keys {
     }
 
     static let sendProgressReports: Key<Bool> = DebugKey("sendProgressReports", default: true)
+
+    /// Forces a holiday's Home row regardless of the date.
+    static let previewHoliday: Key<Holiday?> = Key("previewHoliday", suite: .appSuite)
 }
 #endif
