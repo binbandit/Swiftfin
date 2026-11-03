@@ -18,12 +18,25 @@ struct FilterView: View {
 
     let type: ItemFilterType
 
+    /// Words sort orders in the current field's terms, such as "A to Z" for names
+    private func displayed(_ filters: [AnyItemFilter], in group: ItemFilterType.Group) -> [AnyItemFilter] {
+        guard group.keyPath == \ItemFilterCollection.sortOrder.asAnyItemFilter,
+              let sortBy = viewModel.currentFilters.sortBy.first
+        else { return filters }
+
+        return filters.map { filter in
+            let title = ItemSortOrder(rawValue: filter.value).flatMap(sortBy.orderTitle)
+
+            return AnyItemFilter(displayTitle: title ?? filter.displayTitle, value: filter.value)
+        }
+    }
+
     @ViewBuilder
     private func selector(group: ItemFilterType.Group) -> some View {
-        let source = viewModel.allFilters[keyPath: group.keyPath]
+        let source = displayed(viewModel.allFilters[keyPath: group.keyPath], in: group)
 
         let selectionBinding: Binding<[AnyItemFilter]> = Binding {
-            viewModel.currentFilters[keyPath: group.keyPath]
+            displayed(viewModel.currentFilters[keyPath: group.keyPath], in: group)
         } set: {
             group.setter($0, viewModel)
         }

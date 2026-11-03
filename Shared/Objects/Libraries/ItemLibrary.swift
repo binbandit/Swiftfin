@@ -94,6 +94,16 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
         .eraseToAnyView()
     }
 
+    #if os(tvOS)
+    func makeHeaderAccessory() -> AnyView {
+        LibraryFilterBar(
+            viewModel: filterViewModel,
+            types: filterViewModel.adjustableTypes(of: Defaults[.Customization.Library.enabledDrawerFilters])
+        )
+        .eraseToAnyView()
+    }
+    #endif
+
     func libraryStyleOptions(environment: Environment) -> LibraryStyleOptions {
         let itemTypes = environment.filters.itemTypes.isEmpty ?
             parent.supportedItemTypes(for: environment.grouping) :
@@ -227,13 +237,13 @@ struct ItemLibrary: MediaLibrary, SearchablePagingLibrary, WithRandomElementLibr
         using filters: ItemFilterCollection
     ) -> Paths.GetItemsParameters {
         var parameters = parameters
-        parameters.audioLanguages = filters.audioLanguages.map(\.value)
+        parameters.audioLanguages = filters.audioLanguages.flatMap(\.codes)
         parameters.filters = filters.traits
         parameters.genres = filters.genres.map(\.value)
         parameters.officialRatings = filters.officialRatings.map(\.value)
         parameters.sortBy = filters.sortBy
         parameters.sortOrder = filters.sortOrder
-        parameters.subtitleLanguages = filters.subtitleLanguages.map(\.value)
+        parameters.subtitleLanguages = filters.subtitleLanguages.flatMap(\.codes)
         parameters.tags = filters.tags.map(\.value)
         parameters.years = filters.years.compactMap { Int($0.value) }
 
@@ -288,7 +298,7 @@ private struct ItemLibraryBody<Content: View>: View {
     private let filterViewModel: FilterViewModel
 
     private var filterTypes: [ItemFilterType] {
-        enabledDrawerFilters.filter { !filterViewModel.staticFilters.containsFilters(ofType: $0) }
+        filterViewModel.adjustableTypes(of: enabledDrawerFilters)
     }
 
     init(

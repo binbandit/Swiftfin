@@ -11,7 +11,11 @@ import SwiftUI
 
 extension NavigationRoute {
 
-    static func filter(type: ItemFilterType, viewModel: FilterViewModel) -> NavigationRoute {
+    static func filter(
+        type: ItemFilterType,
+        viewModel: FilterViewModel,
+        onDismiss: (() -> Void)? = nil
+    ) -> NavigationRoute {
         NavigationRoute(
             id: "filter",
             style: .sheet
@@ -20,6 +24,7 @@ extension NavigationRoute {
                 viewModel: viewModel,
                 type: type
             )
+            .onDisappear(perform: onDismiss)
         }
     }
 

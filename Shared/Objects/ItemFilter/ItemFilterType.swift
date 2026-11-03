@@ -17,15 +17,16 @@ enum ItemFilterType: String, CaseIterable, Displayable, Identifiable, Storable, 
         selectorType: SelectorType
     )
 
-    case audioLanguage
-    case genres
-    case letter
-    case officialRatings
+    // The default order of filter controls, most used first
     case sortBy
-    case subtitleLanguage
-    case tags
+    case genres
     case traits
+    case audioLanguage
+    case subtitleLanguage
+    case officialRatings
     case years
+    case tags
+    case letter
     case category
 
     var displayTitle: String {
@@ -47,7 +48,7 @@ enum ItemFilterType: String, CaseIterable, Displayable, Identifiable, Storable, 
         case .tags:
             L10n.tags
         case .traits:
-            L10n.filters
+            L10n.status
         case .years:
             L10n.years
         }
@@ -167,7 +168,7 @@ enum ItemFilterType: String, CaseIterable, Displayable, Identifiable, Storable, 
         case .tags:
             "tag"
         case .traits:
-            "heart"
+            "checkmark.circle"
         case .years:
             "calendar"
         }

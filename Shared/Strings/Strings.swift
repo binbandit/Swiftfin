@@ -154,6 +154,8 @@ internal enum L10n {
   internal static let aspectFill = L10n.tr("Localizable", "aspectFill", fallback: "Aspect fill")
   /// Aspect ratio
   internal static let aspectRatio = L10n.tr("Localizable", "aspectRatio", fallback: "Aspect ratio")
+  /// A to Z - Alphabetical sort order, first to last
+  internal static let aToZ = L10n.tr("Localizable", "aToZ", fallback: "A to Z")
   /// Audio
   internal static let audio = L10n.tr("Localizable", "audio", fallback: "Audio")
   /// The audio bit depth is not supported
@@ -760,6 +762,8 @@ internal enum L10n {
   internal static let file = L10n.tr("Localizable", "file", fallback: "File")
   /// Fill
   internal static let fill = L10n.tr("Localizable", "fill", fallback: "Fill")
+  /// Filter & Sort - Button that opens the filter and sort options for a library or search
+  internal static let filterAndSort = L10n.tr("Localizable", "filterAndSort", fallback: "Filter & Sort")
   /// Filters
   internal static let filters = L10n.tr("Localizable", "filters", fallback: "Filters")
   /// Folder
@@ -840,6 +844,8 @@ internal enum L10n {
   internal static let hidden = L10n.tr("Localizable", "hidden", fallback: "Hidden")
   /// Hide user from login screen
   internal static let hideUserFromLoginScreen = L10n.tr("Localizable", "hideUserFromLoginScreen", fallback: "Hide user from login screen")
+  /// Highest first - Numeric sort order, largest value first
+  internal static let highestFirst = L10n.tr("Localizable", "highestFirst", fallback: "Highest first")
   /// Hint
   internal static let hint = L10n.tr("Localizable", "hint", fallback: "Hint")
   /// History
@@ -1034,8 +1040,12 @@ internal enum L10n {
   internal static let logs = L10n.tr("Localizable", "logs", fallback: "Logs")
   /// Access the Jellyfin server logs for troubleshooting and monitoring purposes.
   internal static let logsDescription = L10n.tr("Localizable", "logsDescription", fallback: "Access the Jellyfin server logs for troubleshooting and monitoring purposes.")
+  /// Longest first - Runtime sort order, longest first
+  internal static let longestFirst = L10n.tr("Localizable", "longestFirst", fallback: "Longest first")
   /// Long press
   internal static let longPress = L10n.tr("Localizable", "longPress", fallback: "Long press")
+  /// Lowest first - Numeric sort order, smallest value first
+  internal static let lowestFirst = L10n.tr("Localizable", "lowestFirst", fallback: "Lowest first")
   /// Lyricist
   internal static let lyricist = L10n.tr("Localizable", "lyricist", fallback: "Lyricist")
   /// Lyrics
@@ -1158,6 +1168,8 @@ internal enum L10n {
   internal static let neverRun = L10n.tr("Localizable", "neverRun", fallback: "Never run")
   /// New episodes only
   internal static let newEpisodesOnly = L10n.tr("Localizable", "newEpisodesOnly", fallback: "New episodes only")
+  /// Newest first - Date sort order, most recent first
+  internal static let newestFirst = L10n.tr("Localizable", "newestFirst", fallback: "Newest first")
   /// New password
   internal static let newPassword = L10n.tr("Localizable", "newPassword", fallback: "New password")
   /// News
@@ -1200,6 +1212,10 @@ internal enum L10n {
   internal static let noPublicUsers = L10n.tr("Localizable", "noPublicUsers", fallback: "No public users")
   /// No results
   internal static let noResults = L10n.tr("Localizable", "noResults", fallback: "No results")
+  /// No Results for “%@” - Search empty state title with the search text
+  internal static func noResultsForQuery(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "noResultsForQuery", String(describing: p1), fallback: "No Results for “%@”")
+  }
   /// No runtime limit
   internal static let noRuntimeLimit = L10n.tr("Localizable", "noRuntimeLimit", fallback: "No runtime limit")
   /// Not supported
@@ -1210,6 +1226,8 @@ internal enum L10n {
   internal static let officialRating = L10n.tr("Localizable", "officialRating", fallback: "Official rating")
   /// OK
   internal static let ok = L10n.tr("Localizable", "ok", fallback: "OK")
+  /// Oldest first - Date sort order, earliest first
+  internal static let oldestFirst = L10n.tr("Localizable", "oldestFirst", fallback: "Oldest first")
   /// On
   internal static let on = L10n.tr("Localizable", "on", fallback: "On")
   /// On application startup
@@ -1664,8 +1682,12 @@ internal enum L10n {
   internal static let scrub = L10n.tr("Localizable", "scrub", fallback: "Scrub")
   /// Search
   internal static let search = L10n.tr("Localizable", "search", fallback: "Search")
+  /// Try removing some filters to see more results. - Search empty state hint when filters are on
+  internal static let searchFiltersHint = L10n.tr("Localizable", "searchFiltersHint", fallback: "Try removing some filters to see more results.")
   /// Search for missing metadata
   internal static let searchForMissingMetadata = L10n.tr("Localizable", "searchForMissingMetadata", fallback: "Search for missing metadata")
+  /// Check the spelling or try a different search. - Search empty state hint
+  internal static let searchNoResultsHint = L10n.tr("Localizable", "searchNoResultsHint", fallback: "Check the spelling or try a different search.")
   /// Season
   internal static let season = L10n.tr("Localizable", "season", fallback: "Season")
   /// S%1$@:E%2$@
@@ -1724,6 +1746,8 @@ internal enum L10n {
   internal static let settings = L10n.tr("Localizable", "settings", fallback: "Settings")
   /// Short
   internal static let short = L10n.tr("Localizable", "short", fallback: "Short")
+  /// Shortest first - Runtime sort order, shortest first
+  internal static let shortestFirst = L10n.tr("Localizable", "shortestFirst", fallback: "Shortest first")
   /// Show favorited
   internal static let showFavorited = L10n.tr("Localizable", "showFavorited", fallback: "Show favorited")
   /// Show missing episodes
@@ -1934,6 +1958,8 @@ internal enum L10n {
   internal static let timestamp = L10n.tr("Localizable", "timestamp", fallback: "Timestamp")
   /// Title
   internal static let title = L10n.tr("Localizable", "title", fallback: "Title")
+  /// Top Results - Search row with the closest matches for the query
+  internal static let topResults = L10n.tr("Localizable", "topResults", fallback: "Top Results")
   /// Total time
   internal static let totalTime = L10n.tr("Localizable", "totalTime", fallback: "Total time")
   /// Tracks
@@ -2138,6 +2164,8 @@ internal enum L10n {
   internal static let yes = L10n.tr("Localizable", "yes", fallback: "Yes")
   /// Zoom
   internal static let zoom = L10n.tr("Localizable", "zoom", fallback: "Zoom")
+  /// Z to A - Alphabetical sort order, last to first
+  internal static let zToA = L10n.tr("Localizable", "zToA", fallback: "Z to A")
 }
 
 extension L10n {

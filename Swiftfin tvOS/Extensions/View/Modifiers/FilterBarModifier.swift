@@ -6,65 +6,53 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Defaults
 import SwiftUI
 
+/// Heads a tab's library with its filter bar.
+///
+/// Presented libraries show the bar under their title instead, through `PagingLibrary.makeHeaderAccessory()`.
 struct FilterBarModifier: ViewModifier {
 
     @AdaptiveLayout
     private var viewLayout
 
-    @Default(.Customization.Library.letterPickerOrientation)
-    private var letterPickerOrientation
-
-    @FocusState
-    private var focusedFilter: FilterTrack.FocusTarget?
+    @Environment(\.isPresented)
+    private var isPresented
 
     @ObservedObject
     var viewModel: FilterViewModel
 
     let types: [ItemFilterType]
 
-    private var edge: HorizontalEdge {
-        letterPickerOrientation == .trailing ? .leading : .trailing
-    }
-
-    private var filters: some View {
-        VStack(spacing: 20) {
-            ForEach(subviews: FilterTrack(
-                viewModel: viewModel,
-                types: types,
-                focus: $focusedFilter,
-                style: .compact,
-                iconEdge: edge
-            )) { button in
-                Color.clear
-                    .frame(width: 64, height: 64)
-                    .overlay(alignment: edge == .leading ? .leading : .trailing) {
-                        button
-                    }
-            }
-        }
-        .scrollIfLargerThanContainer()
-        .frame(width: 64)
-        .coordinatedFocusScope(
-            $focusedFilter,
-            values: types.map(FilterTrack.FocusTarget.filter) + (viewModel.hasActiveFilters ? [.reset] : [])
-        )
-    }
-
     func body(content: Content) -> some View {
-        if types.isEmpty {
+        if types.isEmpty || isPresented {
             content
         } else {
             content
-                .focusSection()
-                .safeAreaInset(edge: edge, alignment: .center, spacing: 0) {
-                    filters
-                        .coordinatedFocus(.secondary)
-                        .padding(edge.asEdgeSet, viewLayout.itemSpacing)
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    // Library grids inset their items by the edge padding, so the bar lines up with them.
+                    LibraryFilterBar(viewModel: viewModel, types: types)
+                        .contentMargins(.horizontal, viewLayout.edgePadding, for: .scrollContent)
+                        .padding(.top, viewLayout.itemSpacing / 2)
                 }
-                .ignoresSafeArea(.all, edges: edge.asEdgeSet)
+        }
+    }
+}
+
+/// A library's filter bar, with room below it for a focused poster in the first row
+struct LibraryFilterBar: View {
+
+    @AdaptiveLayout
+    private var viewLayout
+
+    let viewModel: FilterViewModel
+    let types: [ItemFilterType]
+
+    var body: some View {
+        if types.isNotEmpty {
+            FilterBar(viewModel: viewModel, types: types)
+                .padding(.bottom, viewLayout.itemSpacing / 2)
+                .coordinatedFocus(.secondary)
         }
     }
 }

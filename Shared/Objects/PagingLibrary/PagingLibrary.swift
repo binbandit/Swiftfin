@@ -91,6 +91,11 @@ protocol PagingLibrary<Element> {
     func libraryStyleOptions(environment: Environment) -> LibraryStyleOptions
 
     func makeMenuContent(environment: Binding<Environment>) -> AnyView
+
+    #if os(tvOS)
+    /// Controls shown under a presented library's title, such as filters
+    func makeHeaderAccessory() -> AnyView
+    #endif
 }
 
 extension PagingLibrary where Element: LibraryElement {
@@ -144,6 +149,13 @@ extension PagingLibrary {
         EmptyView()
             .eraseToAnyView()
     }
+
+    #if os(tvOS)
+    func makeHeaderAccessory() -> AnyView {
+        EmptyView()
+            .eraseToAnyView()
+    }
+    #endif
 }
 
 @MainActor

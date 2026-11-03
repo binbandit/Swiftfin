@@ -14,12 +14,6 @@ struct FilterTrack: View {
     @AdaptiveLayout
     private var viewLayout
 
-    enum Style {
-
-        case compact
-        case regular
-    }
-
     enum FocusTarget: Hashable {
 
         case reset
@@ -55,8 +49,6 @@ struct FilterTrack: View {
 
     let types: [ItemFilterType]
     let focus: FocusState<FocusTarget?>.Binding
-    var style: Style = .regular
-    var iconEdge: HorizontalEdge = .leading
 
     private var targets: [FocusTarget] {
         (viewModel.hasActiveFilters ? [.reset] : []) + types.map(FocusTarget.filter)
@@ -71,56 +63,23 @@ struct FilterTrack: View {
         }
     }
 
-    private func reset() {
-        #if os(tvOS)
-        focus.wrappedValue = types.first.map(FocusTarget.filter)
-        #endif
-
-        viewModel.reset(filterType: nil)
-    }
-
-    private func buttonIcon(for target: FocusTarget) -> some View {
-        Image(systemName: target.systemImage)
-            #if os(tvOS)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 32, height: 32)
-                .padding(.vertical, 8)
-            #endif
-    }
-
-    @ViewBuilder
     private func buttonLabel(for target: FocusTarget) -> some View {
-        let showsTitle = style == .regular || focus.wrappedValue == target
-
         HStack(spacing: viewLayout.value(standard: 4, large: 12)) {
-            if iconEdge == .leading {
-                buttonIcon(for: target)
-            }
+            Image(systemName: target.systemImage)
 
             Text(target.title)
-                .isVisible(showsTitle)
-
-            if iconEdge == .trailing {
-                buttonIcon(for: target)
-            }
         }
         .lineLimit(1)
         .fixedSize()
-        .frame(width: showsTitle ? nil : 32, alignment: iconEdge == .leading ? .leading : .trailing)
     }
 
     private var resetButton: some View {
-        #if os(iOS)
         Menu(FocusTarget.reset.title, systemImage: FocusTarget.reset.systemImage) {
-            Button(L10n.reset, role: .destructive, action: reset)
+            Button(L10n.reset, role: .destructive) {
+                viewModel.reset(filterType: nil)
+            }
         }
         .labelStyle(.iconOnly)
-        #else
-        Button(action: reset) {
-            buttonLabel(for: .reset)
-        }
-        #endif
     }
 
     private func button(for target: FocusTarget) -> some View {
@@ -149,8 +108,5 @@ struct FilterTrack: View {
         .font(viewLayout.value(standard: .footnote, large: .callout))
         .controlSize(viewLayout.value(standard: .small, large: .large))
         .buttonStyle(.capsule(selectionTint: accentColor, focusTint: viewLayout.value(standard: nil, large: .white)))
-        #if os(tvOS)
-        .animation(.snappy(duration: 0.2), value: focus.wrappedValue)
-        #endif
     }
 }

@@ -20,6 +20,18 @@ struct SearchContentGroupProvider: ContentGroupProvider {
         }
     }
 
+    private static let itemTypes: [BaseItemKind] = [
+        .movie,
+        .series,
+        .boxSet,
+        .episode,
+        .musicVideo,
+        .video,
+        .liveTvProgram,
+        .tvChannel,
+        .musicArtist,
+    ]
+
     let id: String = UUID().uuidString
     let displayTitle: String = L10n.search
     let filterViewModel: FilterViewModel
@@ -34,25 +46,104 @@ struct SearchContentGroupProvider: ContentGroupProvider {
 
     @ContentGroupBuilder
     func makeGroups(environment: Environment) async throws -> [any ContentGroup] {
-        try await ItemTypeContentGroupProvider(
-            itemTypes: [
-                BaseItemKind.movie,
-                .series,
-                .boxSet,
-                .episode,
-                .musicVideo,
-                .video,
-                .liveTvProgram,
-                .tvChannel,
-                .musicArtist,
-            ]
-        )
-        .makeGroups(environment: .init(filters: environment.filters))
+        if let query = environment.filters.query {
+            PosterGroup(
+                id: "search-top-results",
+                library: TopResultsLibrary(query: query, filters: environment.filters),
+                environment: .init(isHeaderButtonEnabled: false)
+            )
+        }
+
+        try await ItemTypeContentGroupProvider(itemTypes: Self.itemTypes)
+            .makeGroups(environment: .init(filters: environment.filters))
 
         PosterGroup(
             library: PeopleLibrary(
                 environment: .init(query: environment.filters.query)
             )
         )
+    }
+}
+
+extension SearchContentGroupProvider {
+
+    /// The strongest name matches among shows, movies, collections, and people
+    struct TopResultsLibrary: MediaLibrary {
+
+        private static let limit = 10
+        private static let peopleLimit = 2
+
+        let hasNextPage = false
+        let parent: TitledLibraryParent = .init(displayTitle: L10n.topResults, id: "search-top-results")
+
+        private let library: ItemLibrary
+        private let people: PeopleLibrary
+        private let query: String
+
+        init(query: String, filters: ItemFilterCollection) {
+            var filters = filters
+            filters.itemTypes = [.movie, .series, .boxSet]
+
+            // Without a sort the server orders by relevance, which the ranking below refines.
+            filters.sortBy = []
+            filters.sortOrder = []
+
+            self.library = ItemLibrary(parent: BaseItemDto(), filters: filters)
+            self.people = PeopleLibrary(environment: .init(query: query))
+            self.query = Self.normalized(query)
+        }
+
+        func retrievePage(
+            environment: Empty,
+            pageState: LibraryPageState
+        ) async throws -> [ItemPatch] {
+            let titles = try await library.retrievePage(
+                environment: library.environment ?? .default,
+                pageState: pageState
+            )
+            let persons = try await people.retrievePage(
+                environment: people.environment ?? .default,
+                pageState: pageState
+            )
+
+            // Titles lead, and a couple of people follow them.
+            let results = ranked(titles) + ranked(persons).prefix(Self.peopleLimit)
+
+            return Array(results.prefix(Self.limit))
+        }
+
+        /// Keeps the strong matches, best first, with the server's order breaking ties
+        private func ranked(_ page: [ItemPatch]) -> [ItemPatch] {
+            page.enumerated()
+                .compactMap { offset, patch in
+                    match(for: patch.value).map { (rank: ($0, offset), patch: patch) }
+                }
+                .sorted { $0.rank < $1.rank }
+                .map(\.patch)
+        }
+
+        /// Ranks an exact name first, then a name that starts with the query, then a name with a word that does.
+        ///
+        /// - Returns: `nil` for weaker matches, which stay in their own rows.
+        private func match(for item: BaseItemDto) -> Int? {
+            let name = Self.normalized(item.name ?? "")
+
+            if name == query {
+                return 0
+            } else if name.hasPrefix(query) {
+                return 1
+            } else if name.contains(" \(query)") {
+                return 2
+            } else {
+                return nil
+            }
+        }
+
+        /// Folds case and diacritics, and collapses punctuation into single spaces
+        private static func normalized(_ string: String) -> String {
+            string.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+                .split { !$0.isLetter && !$0.isNumber }
+                .joined(separator: " ")
+        }
     }
 }

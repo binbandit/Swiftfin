@@ -28,7 +28,7 @@ extension ItemSortBy: Displayable, SupportedCaseIterable {
         case .criticRating:
             L10n.criticRating
         case .dateCreated:
-            L10n.dateCreated
+            L10n.dateAdded
         case .dateLastContentAdded:
             L10n.dateLastContentAdded
         case .datePlayed:
@@ -66,7 +66,7 @@ extension ItemSortBy: Displayable, SupportedCaseIterable {
         case .seriesSortName:
             L10n.seriesName
         case .sortName:
-            L10n.sortName
+            L10n.name
         case .startDate:
             L10n.startDate
         case .studio:
@@ -76,14 +76,35 @@ extension ItemSortBy: Displayable, SupportedCaseIterable {
         }
     }
 
+    /// The sort order in words that suit this field, such as "A to Z" or "Newest First"
+    ///
+    /// - Returns: `nil` when the order has no meaning, as with random.
+    func orderTitle(for order: ItemSortOrder) -> String? {
+        let isAscending = order == .ascending
+
+        switch self {
+        case .random:
+            return nil
+        case .album, .albumArtist, .artist, .name, .seriesSortName, .sortName, .studio:
+            return isAscending ? L10n.aToZ : L10n.zToA
+        case .airTime, .dateCreated, .dateLastContentAdded, .datePlayed, .premiereDate, .productionYear, .seriesDatePlayed, .startDate:
+            return isAscending ? L10n.oldestFirst : L10n.newestFirst
+        case .communityRating, .criticRating, .playCount, .videoBitRate:
+            return isAscending ? L10n.lowestFirst : L10n.highestFirst
+        case .runtime:
+            return isAscending ? L10n.shortestFirst : L10n.longestFirst
+        default:
+            return order.displayTitle
+        }
+    }
+
     /// All `ItemSortBy` cases supported in Swiftfin
     /// - This is the order displayed in `FilterView`s so order matters!
     static var supportedCases: [ItemSortBy] {
         [
             // Generic
-            .name,
-            .random,
             .sortName,
+            .random,
 
             // Dates
             .airTime,

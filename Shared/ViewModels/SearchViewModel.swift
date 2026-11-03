@@ -9,6 +9,7 @@
 import Combine
 import Foundation
 import JellyfinAPI
+import OrderedCollections
 import SwiftUI
 
 @MainActor
@@ -26,8 +27,10 @@ final class SearchViewModel: ViewModel {
             switch self {
             case .getSuggestions:
                 .none
-            case let .search(query):
-                query.isEmpty ? .to(.initial) : .to(.searching)
+            // A state change here would make keystrokes during a search get ignored.
+            // Updating the query cancels the search in flight instead.
+            case .search:
+                .none
             case ._actuallySearch:
                 .to(.searching, then: .initial)
                     .onRepeat(.cancel)
@@ -49,6 +52,22 @@ final class SearchViewModel: ViewModel {
 
     var filterViewModel: FilterViewModel {
         itemContentGroupViewModel.provider.filterViewModel
+    }
+
+    /// The result rows, leaving out rows that only repeat Top Results
+    var groups: [any ContentGroup] {
+        let groups = itemContentGroupViewModel.groups
+
+        guard let topResults = groups.first as? PosterGroup<SearchContentGroupProvider.TopResultsLibrary> else { return groups }
+
+        let topResultIDs = topResults.viewModel.elements.ids
+
+        return groups.filter { group in
+            let ids = (group as? PosterGroup<ItemLibrary>)?.viewModel.elements.ids ??
+                (group as? PosterGroup<PeopleLibrary>)?.viewModel.elements.ids
+
+            return ids.map { !$0.isSubset(of: topResultIDs) } ?? true
+        }
     }
 
     var isEmpty: Bool {

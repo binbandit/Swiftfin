@@ -48,8 +48,9 @@ final class FilterViewModel: ViewModel {
 
     private let parent: any LibraryParent?
 
+    /// Whether any filter differs from the static filters. A search query is not a filter.
     var hasActiveFilters: Bool {
-        staticFilters.union(currentFilters) != staticFilters
+        staticFilters.union(currentFilters.mutating(\.query, with: nil)) != staticFilters
     }
 
     private var itemTypes: [BaseItemKind] {
@@ -70,6 +71,11 @@ final class FilterViewModel: ViewModel {
         super.init()
     }
 
+    /// The given filter types, without those the static filters fix
+    func adjustableTypes(of types: [ItemFilterType]) -> [ItemFilterType] {
+        types.filter { !staticFilters.containsFilters(ofType: $0) }
+    }
+
     func isFilterSelected(type: ItemFilterType) -> Bool {
         guard !staticFilters.containsFilters(ofType: type) else { return false }
 
@@ -80,7 +86,7 @@ final class FilterViewModel: ViewModel {
     private func resetCurrentFilters(_ type: ItemFilterType?) {
 
         guard let type else {
-            currentFilters = .default
+            currentFilters = ItemFilterCollection.default.mutating(\.query, with: currentFilters.query)
             return
         }
 
@@ -160,16 +166,15 @@ final class FilterViewModel: ViewModel {
         let request = Paths.getQueryFilters(parameters: parameters)
         let response = try await send(request)
 
-        let audioLanguages: [ItemLanguage] = (response.value.audioLanguages ?? [])
-            .compactMap(ItemLanguage.init)
+        // Synonymous codes map to the same language, so drop the repeats.
+        let audioLanguages = OrderedSet((response.value.audioLanguages ?? []).compactMap(ItemLanguage.init))
             .sorted(using: \.displayTitle)
 
         let genres: [ItemGenre] = (response.value.genres ?? [])
             .compactMap(\.name)
             .map(ItemGenre.init)
 
-        let subtitleLanguages: [ItemLanguage] = (response.value.subtitleLanguages ?? [])
-            .compactMap(ItemLanguage.init)
+        let subtitleLanguages = OrderedSet((response.value.subtitleLanguages ?? []).compactMap(ItemLanguage.init))
             .sorted(using: \.displayTitle)
 
         let tags = (response.value.tags ?? [])

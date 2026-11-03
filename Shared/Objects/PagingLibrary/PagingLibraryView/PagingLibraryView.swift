@@ -200,18 +200,22 @@ struct PagingLibraryView<Library: PagingLibrary>: View where Library.Element: Li
     /// The tvOS navigation bar stays put over scrolling content, so presented pages hide it
     /// and show their title above the grid instead, where it scrolls away with the items.
     private func titleHeader(insets: EdgeInsets, topSafeArea: CGFloat) -> some View {
-        HStack(spacing: viewLayout.itemSpacing) {
-            Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: viewLayout.itemSpacing / 2) {
+            HStack(spacing: viewLayout.itemSpacing) {
+                Text(title)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let parent = viewModel.library.parent as? BaseItemDto {
-                ShuffleButton(item: parent)
-                    .buttonStyle(.glass)
-                    .coordinatedFocus(.secondary)
+                if let parent = viewModel.library.parent as? BaseItemDto {
+                    ShuffleButton(item: parent)
+                        .buttonStyle(.glass)
+                        .coordinatedFocus(.secondary)
+                }
             }
+
+            viewModel.library.makeHeaderAccessory()
         }
         .padding(.top, topSafeArea)
         .padding(.leading, insets.leading)

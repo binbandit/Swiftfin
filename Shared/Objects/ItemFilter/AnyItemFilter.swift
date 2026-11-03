@@ -26,4 +26,13 @@ struct AnyItemFilter: Displayable, Hashable, ItemFilter {
         self.displayTitle = anyFilter.displayTitle
         self.value = anyFilter.value
     }
+
+    // The value identifies a filter, so a relabelled filter is still the same one.
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.value == rhs.value
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+    }
 }
