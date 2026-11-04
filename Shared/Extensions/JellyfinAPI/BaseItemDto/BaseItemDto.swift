@@ -467,7 +467,7 @@ extension BaseItemDto {
         guard let premiereDate else { return nil }
 
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "YYYY"
+        dateFormatter.dateFormat = "yyyy"
 
         return dateFormatter.string(from: premiereDate)
     }
