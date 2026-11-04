@@ -15,6 +15,7 @@ struct ItemView: View {
 
     enum Component {
 
+        static let actions = "itemView-actions"
         static let header = "itemView-header"
         static let menu = "itemView-menu"
         static let play = "itemView-play"
@@ -32,10 +33,15 @@ struct ItemView: View {
     @Router
     private var router
 
+    #if os(tvOS)
+    @EnvironmentObject
+    private var navigationCoordinator: NavigationCoordinator
+    #endif
+
     private var buttonConfiguration = ItemActionButtons.Configuration()
 
     @StateObject
-    private var focusCoordinator = FocusCoordinator(initial: Component.play)
+    private var focusCoordinator = FocusCoordinator(initial: Component.actions)
     @StateObject
     private var provider: ItemContentGroupProvider
     @StateObject
@@ -158,6 +164,15 @@ struct ItemView: View {
             viewModel.refresh()
         }
         .environmentObject(focusCoordinator)
+        #if os(tvOS)
+        // Leaving the player returns to Resume or Play. tvOS can't always restore the control
+        // that started playback, such as after Play on Top Shelf, and would pick a card instead.
+        .onChange(of: navigationCoordinator.presentedFullScreen == nil) { _, isPlayerClosed in
+            if isPlayerClosed {
+                focusCoordinator.focus(Component.actions)
+            }
+        }
+        #endif
         .confirmationDialog(
             L10n.deleteItemConfirmationMessage,
             isPresented: $provider.isPresentingDeleteConfirmation,

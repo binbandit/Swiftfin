@@ -76,7 +76,7 @@ struct NavigationInjectionView: View {
             NavigationInjectionView(coordinator: presentedRoute.coordinator) {
                 presentedRoute.route.destination
             }
-            .transformEnvironment(\.frameForParentView) { $0[.tabView] = nil }
+            .presentedOverTabView()
             // A sheet floats over the page beneath it.
             .if(!presentedRoute.route.isPush) { view in
                 view.background(.regularMaterial)
@@ -95,7 +95,7 @@ struct NavigationInjectionView: View {
             NavigationInjectionView(coordinator: presentedRoute.coordinator) {
                 presentedRoute.route.destination
             }
-            .transformEnvironment(\.frameForParentView) { $0[.tabView] = nil }
+            .presentedOverTabView()
         }
         #else
         .sheet(
@@ -148,6 +148,16 @@ struct NavigationInjectionView: View {
 }
 
 #if os(tvOS)
+private extension View {
+
+    /// A presentation covers the whole tab view, sidebar included, so it neither takes the tab view's frame
+    /// nor the tab content's disabled state, which tvOS sets while its sidebar is open, such as at launch
+    func presentedOverTabView() -> some View {
+        transformEnvironment(\.frameForParentView) { $0[.tabView] = nil }
+            .environment(\.isEnabled, true)
+    }
+}
+
 /// tvOS presents a push over the page that it replaces, so hide that page underneath,
 /// leaving the pushed page on the same app background as the root.
 struct HiddenUnderPushModifier: ViewModifier {

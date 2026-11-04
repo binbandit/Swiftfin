@@ -35,14 +35,15 @@ extension ItemView {
 
         var body: some View {
             let (visible, overflow, menu) = buttonConfiguration.resolvedButtons(for: provider)
-            let defaultFocusedButton = provider.item.presentPlayButton ?
+            // Play is disabled without something to play
+            let defaultFocusedButton = provider.item.presentPlayButton && provider.playbackIntent != nil ?
                 ItemView.Component.play : visible.first?.id ?? ItemView.Component.menu
 
             VStack(alignment: alignment, spacing: viewLayout.value(standard: 8, large: 24)) {
                 if provider.item.presentPlayButton {
                     VStack(spacing: viewLayout.value(standard: 6, large: 12)) {
                         PlayButton(provider: provider)
-                            .coordinatedFocus(ItemView.Component.play, selection: $focusedButton)
+                            .focused($focusedButton, equals: ItemView.Component.play)
                             .frame(height: viewLayout.controlHeight)
 
                         PlayButton.Details(provider: provider)
@@ -63,6 +64,8 @@ extension ItemView {
                 defaultFocusedButton,
                 priority: .userInitiated
             )
+            // The page focuses the bar, which picks Play, or its first action when nothing plays
+            .coordinatedFocus(ItemView.Component.actions)
             .multilineTextAlignment(.center)
         }
     }

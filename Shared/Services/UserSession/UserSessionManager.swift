@@ -70,6 +70,8 @@ final class UserSessionManager: ObservableObject {
 
     @MainActor
     private var sessionTransition: (id: UUID, task: Task<Void, Never>)?
+    @MainActor
+    private var launchSessionRestore: Task<Void, Never>?
 
     @MainActor
     var hasActivePlayback: Bool {
@@ -80,10 +82,17 @@ final class UserSessionManager: ObservableObject {
         setupObservations()
     }
 
+    /// Restores the session from the last launch, once. Returns when it's restored.
     @MainActor
     func start() async {
-        guard state == .initial else { return }
+        let restore = launchSessionRestore ?? Task { await restoreLaunchSession() }
+        launchSessionRestore = restore
 
+        await restore.value
+    }
+
+    @MainActor
+    private func restoreLaunchSession() async {
         do {
             if Defaults[.signOutOnClose] {
                 Defaults[.lastSignedInUserID] = .signedOut
@@ -140,6 +149,9 @@ final class UserSessionManager: ObservableObject {
     ) async {
         guard let deepLink = DeepLink(url) else { return }
 
+        // A link can launch the app, so match it against the restored session, not one still restoring
+        await start()
+
         do {
             let deepLinkSession = try session(for: deepLink)
             let currentSession = currentSession
@@ -166,11 +178,10 @@ final class UserSessionManager: ObservableObject {
 
     @MainActor
     func consumePendingDeepLink() -> DeepLink? {
-        defer {
-            pendingDeepLink = nil
-        }
+        guard let deepLink = pendingDeepLink else { return nil }
 
-        return pendingDeepLink
+        pendingDeepLink = nil
+        return deepLink
     }
 
     @MainActor

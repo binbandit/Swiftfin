@@ -129,7 +129,8 @@ struct MainTabView: View {
 
     var body: some View {
         tabContent()
-            .onChange(of: userSessionManager.pendingDeepLink) {
+            .onChange(of: userSessionManager.pendingDeepLink, initial: true) {
+                // Signing in for a link rebuilds this view, which can appear after the link is set
                 routePendingDeepLink(userSessionManager.consumePendingDeepLink())
             }
             .onReceive(userSessionManager.routePublisher) { route in
