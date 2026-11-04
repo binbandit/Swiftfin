@@ -185,7 +185,7 @@ extension UserSessionManager {
     }
 
     @MainActor
-    private func playItem(
+    func playItem(
         id: String,
         mediaSourceID: String? = nil,
         startPositionTicks: Int? = nil,

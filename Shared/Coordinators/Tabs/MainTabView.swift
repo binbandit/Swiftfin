@@ -64,8 +64,7 @@ struct MainTabView: View {
         guard let deepLink else { return }
 
         Task { @MainActor in
-            let route = deepLink.route()
-            await tabCoordinator.route(to: route)
+            await deepLink.open(in: tabCoordinator)
         }
     }
 

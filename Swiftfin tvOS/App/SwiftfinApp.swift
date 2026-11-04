@@ -11,8 +11,12 @@ import SwiftUI
 @main
 struct SwiftfinApp: App {
 
+    private let topShelfSnapshotWriter: TopShelfSnapshotWriter
+
     init() {
         Self.configure()
+
+        topShelfSnapshotWriter = TopShelfSnapshotWriter()
 
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.label]
     }

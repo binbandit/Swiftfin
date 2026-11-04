@@ -51,4 +51,24 @@ final class TabCoordinator: ObservableObject {
 
         tab.coordinator.push(route)
     }
+
+    /// Shows a route over the selected tab's root page, closing pages left open first, such as a paused player
+    func open(_ route: NavigationRoute) async {
+        guard let coordinator = tabs.first(where: { $0.item.id == selectedTabID })?.coordinator else { return }
+
+        withTransaction(\.disablesAnimations, true) {
+            coordinator.path.removeAll()
+            coordinator.presentedSheet = nil
+            coordinator.presentedFullScreen = nil
+        }
+
+        // A page presented before the others finish closing is dropped
+        for _ in 0 ..< 40 {
+            guard UIApplication.shared.keyWindow?.rootViewController?.presentedViewController != nil else { break }
+
+            try? await Task.sleep(for: .milliseconds(50))
+        }
+
+        coordinator.push(route)
+    }
 }
