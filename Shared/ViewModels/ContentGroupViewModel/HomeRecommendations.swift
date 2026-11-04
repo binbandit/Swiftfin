@@ -36,20 +36,24 @@ enum HomeRecommendations {
         guard includesWatched || includesGenres else { return [] }
 
         do {
+            let availability = userSession.titleAvailability
             let requests = Requests(userSession: userSession)
-            var picker = try RowPicker(store: userSession.items)
+            var picker = try RowPicker(store: userSession.items, availability: availability)
 
             async let history = requests.recentlyWatched()
             async let titlesOnHome = requests.titlesOnHome()
             async let recommendations = includesWatched ? requests.movieRecommendations() : []
+
+            await availability.prepared()
 
             let watched = try await history
             picker.exclude(watched)
             try await picker.exclude(titlesOnHome)
 
             let titles = Array(watched.compactMap(WatchedTitle.init).uniqued(on: \.id))
-            // The most recent movie and the most recent series
-            let baselines = includesWatched ? Array(titles.uniqued(on: \.type)) : []
+            // The most recent movie and the most recent series that can still play
+            let baselines = includesWatched ?
+                Array(titles.filter { !availability.isUnavailable(id: $0.id) }.uniqued(on: \.type)) : []
             let genres = includesGenres ? topGenres(in: titles) : []
 
             async let similarItems = baselines.concurrentMap { await (try? requests.similar(to: $0.id)) ?? [] }
@@ -70,6 +74,7 @@ enum HomeRecommendations {
             // Fullest categories first within each kind
             let categories = try await recommendations
                 .filter { recommendation in !baselines.contains { $0.id == recommendation.category.categoryID } }
+                .filter { !availability.isUnavailable(id: $0.category.categoryID) }
                 .sorted { ($0.priority, $1.items.count) < ($1.priority, $0.items.count) }
 
             for recommendation in categories where watchedRows.count < maxWatchedRows {
@@ -185,12 +190,14 @@ private struct RowPicker {
     private static let itemCount = 4 ... 20
 
     private let store: ItemStore
+    private let availability: TitleAvailability
     private let token: ItemStore.RequestToken
     private var excluded: Set<TitleKey> = []
 
     // Begins before any request so newer user data is never overwritten
-    init(store: ItemStore) throws {
+    init(store: ItemStore, availability: TitleAvailability) throws {
         self.store = store
+        self.availability = availability
         self.token = try store.beginRequest()
     }
 
@@ -201,7 +208,7 @@ private struct RowPicker {
     /// Picks unwatched titles first, skipping any already shown. Returns nil when too few are left to fill a row.
     mutating func row(id: String, title: String, from candidates: [ItemPatch]) throws -> HomeRecommendations.Row? {
         let (unwatched, watched) = candidates
-            .filter { [.movie, .series].contains($0.value.type) }
+            .filter { [.movie, .series].contains($0.value.type) && !availability.isUnavailable($0.value) }
             .partitioned { $0.value.userData?.isPlayed == true }
 
         var excluded = excluded

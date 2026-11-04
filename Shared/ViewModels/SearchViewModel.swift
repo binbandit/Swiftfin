@@ -74,6 +74,13 @@ final class SearchViewModel: ViewModel {
         itemContentGroupViewModel.groups.isEmpty
     }
 
+    /// Whether the search matched titles that are hidden because their files are unavailable
+    var hidesUnavailableMatches: Bool {
+        itemContentGroupViewModel.candidateGroups.contains { group in
+            (group as? PosterGroup<ItemLibrary>)?.viewModel.hidesUnavailableElements == true
+        }
+    }
+
     var isNotEmpty: Bool {
         !isEmpty
     }
@@ -136,7 +143,8 @@ final class SearchViewModel: ViewModel {
 
         let request = Paths.getItems(parameters: parameters)
         let response = try await send(request)
+        let availability = try requireUserSession().titleAvailability
 
-        self.suggestions = response.value.items ?? []
+        self.suggestions = (response.value.items ?? []).filter { !availability.isUnavailable($0) }
     }
 }

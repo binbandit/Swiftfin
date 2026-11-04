@@ -854,6 +854,10 @@ internal enum L10n {
   internal static let hexColor = L10n.tr("Localizable", "hexColor", fallback: "Hex color")
   /// Hidden
   internal static let hidden = L10n.tr("Localizable", "hidden", fallback: "Hidden")
+  /// Hide unavailable titles - Setting that hides titles whose media files the server can't find
+  internal static let hideUnavailableTitles = L10n.tr("Localizable", "hideUnavailableTitles", fallback: "Hide unavailable titles")
+  /// Hides movies and shows whose files the server can't find. - Footer explaining the hide unavailable titles setting
+  internal static let hideUnavailableTitlesDescription = L10n.tr("Localizable", "hideUnavailableTitlesDescription", fallback: "Hides movies and shows whose files the server can\'t find.")
   /// Hide user from login screen
   internal static let hideUserFromLoginScreen = L10n.tr("Localizable", "hideUserFromLoginScreen", fallback: "Hide user from login screen")
   /// Highest first - Numeric sort order, largest value first
@@ -1708,6 +1712,8 @@ internal enum L10n {
   internal static let searchForMissingMetadata = L10n.tr("Localizable", "searchForMissingMetadata", fallback: "Search for missing metadata")
   /// Check the spelling or try a different search. - Search empty state hint
   internal static let searchNoResultsHint = L10n.tr("Localizable", "searchNoResultsHint", fallback: "Check the spelling or try a different search.")
+  /// Matching titles are hidden because their files are unavailable. - Search empty state hint when Hide unavailable titles hid every match
+  internal static let searchUnavailableMatchesHint = L10n.tr("Localizable", "searchUnavailableMatchesHint", fallback: "Matching titles are hidden because their files are unavailable.")
   /// Season
   internal static let season = L10n.tr("Localizable", "season", fallback: "Season")
   /// S%1$@:E%2$@

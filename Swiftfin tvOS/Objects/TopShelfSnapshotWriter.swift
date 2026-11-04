@@ -41,6 +41,8 @@ final class TopShelfSnapshotWriter {
                     .changes
                     .filter(\.changesRows)
                     .map { _ in }
+                    // The rows leave out titles without media, which a check can find after they're written
+                    .merge(with: session.titleAvailability.changes)
                     .prepend(())
                     .eraseToAnyPublisher()
             }

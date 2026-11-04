@@ -104,6 +104,9 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
     @Published
     private(set) var searchElements: IdentifiedArrayOf<Element>
 
+    /// Whether the loaded pages left out titles whose files are unavailable
+    private(set) var hidesUnavailableElements = false
+
     @Published
     var searchQuery: String = "" {
         didSet {
@@ -345,6 +348,9 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
         let requestGeneration = generation
         var replacing = replacing
 
+        // Waiting briefly for a server's first availability check beats dropping titles after they're shown
+        await userSession?.titleAvailability.prepared()
+
         while !Task.isCancelled, !isInvalidated {
             let offset = replacing ? 0 : nextOffset
             let page = try pageState(offset: offset, pageSize: pageSize)
@@ -368,9 +374,11 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
 
             if replacing {
                 elements = items
+                hidesUnavailableElements = page.hidesUnavailableItems
                 replacing = false
             } else {
                 elements.append(contentsOf: items.filter { elements[id: $0.id] == nil })
+                hidesUnavailableElements = hidesUnavailableElements || page.hidesUnavailableItems
             }
 
             // Continue paging when filtered or duplicate rows add no visible items
@@ -413,6 +421,8 @@ class PagingLibraryViewModel<Library: PagingLibrary>: ViewModel, Identifiable {
         else { return }
 
         let requestGeneration = searchGeneration
+
+        await userSession?.titleAvailability.prepared()
 
         while !Task.isCancelled, !isInvalidated {
             let offset = nextSearchOffset

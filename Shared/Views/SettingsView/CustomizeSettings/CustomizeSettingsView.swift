@@ -13,6 +13,8 @@ struct CustomizeSettingsView: View {
 
     @Default(.Customization.Search.enabledDrawerFilters)
     private var searchEnabledDrawerFilters
+    @Default(.Customization.hideUnavailableTitles)
+    private var hideUnavailableTitles
 
     #if os(tvOS)
     @Default(.Customization.tabBarPlacement)
@@ -54,6 +56,12 @@ struct CustomizeSettingsView: View {
 
             ChevronButton(L10n.videoPlayer) {
                 router.route(to: .videoPlayerSettings)
+            }
+
+            Section {
+                Toggle(L10n.hideUnavailableTitles, isOn: $hideUnavailableTitles)
+            } footer: {
+                Text(L10n.hideUnavailableTitlesDescription)
             }
 
             HomeSection()

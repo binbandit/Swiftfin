@@ -55,7 +55,18 @@ struct SearchView: View {
                 systemImage: "magnifyingglass"
             )
         } description: {
-            Text(viewModel.filterViewModel.hasActiveFilters ? L10n.searchFiltersHint : L10n.searchNoResultsHint)
+            Text(noResultsHint)
+        }
+    }
+
+    // The likeliest reason first, so a correct search isn't blamed on its spelling
+    private var noResultsHint: String {
+        if viewModel.hidesUnavailableMatches {
+            L10n.searchUnavailableMatchesHint
+        } else if viewModel.filterViewModel.hasActiveFilters {
+            L10n.searchFiltersHint
+        } else {
+            L10n.searchNoResultsHint
         }
     }
 

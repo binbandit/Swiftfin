@@ -7,6 +7,7 @@
 //
 
 import Combine
+import Defaults
 import Foundation
 
 @MainActor
@@ -40,7 +41,8 @@ final class ContentGroupViewModel<Provider: ContentGroupProvider>: ViewModel {
     @Published
     private(set) var groups: [any ContentGroup] = []
 
-    private var candidateGroups: [any ContentGroup] = []
+    /// Every group built, including empty ones that aren't shown
+    private(set) var candidateGroups: [any ContentGroup] = []
     private var groupCancellables = Set<AnyCancellable>()
     private var needsGroupRebuild = true
     private var isRefreshingGroups = false
@@ -52,7 +54,12 @@ final class ContentGroupViewModel<Provider: ContentGroupProvider>: ViewModel {
         self.provider = provider
         super.init()
 
+        // Groups are picked from the titles that aren't hidden, so they're rebuilt when that setting changes
+        let availabilityChanges = Defaults.publisher(.Customization.hideUnavailableTitles, options: [])
+            .map { _ in ContentGroupRefreshRequest() }
+
         provider.refreshRequests
+            .merge(with: availabilityChanges)
             .filter { [refreshSource] in $0.source != refreshSource }
             .handleEvents(receiveOutput: { [weak self] _ in self?.needsGroupRebuild = true })
             .debounce(for: .milliseconds(350), scheduler: RunLoop.main)

@@ -55,9 +55,13 @@ final class UserSession {
     lazy var serverSocketManager = ServerSocketManager()
 
     @MainActor
+    private(set) lazy var titleAvailability = TitleAvailability()
+
+    @MainActor
     private lazy var services: [any UserSessionService] = [
         serverConnectionManager,
         serverSocketManager,
+        titleAvailability,
     ]
 
     init(

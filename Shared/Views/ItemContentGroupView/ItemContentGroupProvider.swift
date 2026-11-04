@@ -329,21 +329,23 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         for item: BaseItemDto,
         userSession: UserSession
     ) async throws -> PlaybackIntent? {
+        // Episodes whose files are gone are skipped, so a series that's partly unavailable plays what's left
+        let availability = userSession.titleAvailability
         let playbackItem: BaseItemDto? = switch item.type {
         case .series:
-            if let nextUp = try await nextUpItem(for: item) {
+            if let nextUp = try await nextUpItem(for: item), !availability.isUnavailable(nextUp) {
                 nextUp
-            } else if let resumeItem = try await resumeItem(for: item) {
+            } else if let resumeItem = try await resumeItem(for: item), !availability.isUnavailable(resumeItem) {
                 resumeItem
             } else {
-                try await firstAvailableItem(for: item)
+                try await firstAvailableItem(for: item, availability: availability)
             }
 
         case .season:
-            if let resumeItem = try await resumeItem(for: item) {
+            if let resumeItem = try await resumeItem(for: item), !availability.isUnavailable(resumeItem) {
                 resumeItem
             } else {
-                try await firstAvailableItem(for: item)
+                try await firstAvailableItem(for: item, availability: availability)
             }
 
         default:
@@ -389,7 +391,7 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         return response.value.items?.first
     }
 
-    private func firstAvailableItem(for item: BaseItemDto) async throws -> BaseItemDto? {
+    private func firstAvailableItem(for item: BaseItemDto, availability: TitleAvailability) async throws -> BaseItemDto? {
         var parameters = Paths.GetItemsParameters()
         parameters.includeItemTypes = [.episode]
         parameters.isMissing = false
@@ -398,10 +400,14 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         parameters.parentID = item.id
         parameters.sortOrder = [.ascending]
 
-        let request = Paths.getItems(parameters: parameters)
-        let response = try await send(request)
+        let first = try await send(Paths.getItems(parameters: parameters)).value.items?.first
 
-        return response.value.items?.first
+        guard let first, availability.isUnavailable(first) else { return first }
+
+        // Only a series whose first episodes are gone needs the rest
+        parameters.limit = nil
+
+        return try await send(Paths.getItems(parameters: parameters)).value.items?.first { !availability.isUnavailable($0) }
     }
 
     private func localTrailers(for item: BaseItemDto) async throws -> [BaseItemDto] {

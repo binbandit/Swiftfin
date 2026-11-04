@@ -153,6 +153,11 @@ extension Defaults.Keys {
             UserKey("shouldShowMissingEpisodes", default: true)
         }
 
+        /// Hides titles whose media files the server can no longer find
+        static var hideUnavailableTitles: Key<Bool> {
+            UserKey("hideUnavailableTitles", default: true)
+        }
+
         static var similarPosterType: Key<PosterDisplayType> {
             UserKey("similarPosterType", default: .portrait)
         }

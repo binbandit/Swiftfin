@@ -33,16 +33,29 @@ final class LibraryPageState {
     private var serverItemCount: Int?
     private var totalRows: Int?
 
+    /// Whether the page left out titles whose files are unavailable
+    private(set) var hidesUnavailableItems = false
+
     func items(from response: Response<BaseItemDtoQueryResult>) throws -> [ItemPatch] {
         serverItemCount = response.value.items?.count ?? 0
         totalRows = response.value.totalRecordCount
-        return try response.patches()
+        return try availableItems(response.patches())
     }
 
     func items(from response: Response<[BaseItemDto]>) throws -> [ItemPatch] {
         serverItemCount = response.value.count
         totalRows = response.value.count
-        return try response.patches()
+        return try availableItems(response.patches())
+    }
+
+    // Every library builds its pages here, so titles without media are hidden from all of them
+    private func availableItems(_ patches: some Collection<ItemPatch>) -> [ItemPatch] {
+        let items = userSession.titleAvailability.removingUnavailable(patches)
+
+        // Some libraries build one page from several responses
+        hidesUnavailableItems = hidesUnavailableItems || items.count < patches.count
+
+        return items
     }
 
     // Server offsets count rows that may be filtered out before they reach the collection
