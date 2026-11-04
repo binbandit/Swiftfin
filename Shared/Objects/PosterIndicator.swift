@@ -14,9 +14,10 @@ struct PosterIndicator: Hashable, Storable {
         case played
         case progress
         case unplayed
+        case newEpisodes
     }
 
     static var all: Self {
-        [.favorited, .played, .progress, .unplayed]
+        [.favorited, .played, .progress, .unplayed, .newEpisodes]
     }
 }

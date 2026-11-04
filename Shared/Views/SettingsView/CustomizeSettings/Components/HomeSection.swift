@@ -20,6 +20,10 @@ extension CustomizeSettingsView {
         private var showRecentlyPlayed
         @Default(.Customization.Home.showHolidays)
         private var showHolidays
+        @Default(.Customization.Home.showBecauseYouWatched)
+        private var showBecauseYouWatched
+        @Default(.Customization.Home.showTopGenres)
+        private var showTopGenres
         @Default(.Customization.Home.maxNextUp)
         private var maxNextUp
         @Default(.Customization.Home.resumeNextUp)
@@ -31,6 +35,8 @@ extension CustomizeSettingsView {
                 Toggle(L10n.recentlyAdded, isOn: $showRecentlyAdded)
                 Toggle(L10n.recentlyPlayed, isOn: $showRecentlyPlayed)
                 Toggle(L10n.holidays, isOn: $showHolidays)
+                Toggle(L10n.becauseYouWatchedRows, isOn: $showBecauseYouWatched)
+                Toggle(L10n.topGenreRows, isOn: $showTopGenres)
                 Toggle(L10n.nextUpRewatch, isOn: $resumeNextUp)
 
                 StateAdapter(initialValue: false) { isNextUpDaysPresented in

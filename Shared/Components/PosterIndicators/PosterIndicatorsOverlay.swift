@@ -7,6 +7,7 @@
 //
 
 import Defaults
+import FactoryKit
 import JellyfinAPI
 import SwiftUI
 
@@ -27,6 +28,9 @@ struct PosterIndicatorsOverlay: View {
     @ViewContextContains(.isInResume)
     private var isInResume
 
+    @Injected(\.newEpisodesTracker)
+    private var newEpisodesTracker
+
     @SharedBaseItem
     var item: BaseItemDto
     let posterDisplayType: PosterDisplayType
@@ -45,6 +49,12 @@ struct PosterIndicatorsOverlay: View {
             !item.isLiveStream &&
             item.userData?.isPlayed == false &&
             (item.userData?.playbackPositionTicks ?? 0) == 0
+    }
+
+    private var showsNewEpisodesIndicator: Bool {
+        indicators.contains(.newEpisodes) &&
+            item.type == .series &&
+            item.id.map(newEpisodesTracker.hasNewEpisodes) == true
     }
 
     private var showsProgressIndicator: Bool {
@@ -93,7 +103,10 @@ struct PosterIndicatorsOverlay: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
-                if showsUnplayedIndicator {
+                if showsNewEpisodesIndicator {
+                    NewEpisodesIndicator()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                } else if showsUnplayedIndicator {
                     UnplayedIndicator(
                         count: posterConfiguration.unplayedStyle == .count ? item.userData?.unplayedItemCount : nil
                     )

@@ -228,6 +228,16 @@ internal enum L10n {
   internal static let basePluginFolder = L10n.tr("Localizable", "basePluginFolder", fallback: "Plugin folder")
   /// Plugin folders
   internal static let basePluginFolders = L10n.tr("Localizable", "basePluginFolders", fallback: "Plugin folders")
+  /// Because You Liked %1$@ - Home row of movies similar to one the user favorited or liked, such as Because You Liked Inception
+  internal static func becauseYouLiked(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "becauseYouLiked", String(describing: p1), fallback: "Because You Liked %1$@")
+  }
+  /// Because You Watched %1$@ - Home row of titles similar to one the user recently watched, such as Because You Watched Grimsby
+  internal static func becauseYouWatched(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "becauseYouWatched", String(describing: p1), fallback: "Because You Watched %1$@")
+  }
+  /// Because you watched - Setting that shows Home rows picked from what the user recently watched
+  internal static let becauseYouWatchedRows = L10n.tr("Localizable", "becauseYouWatchedRows", fallback: "Because you watched")
   /// Behavior
   internal static let behavior = L10n.tr("Localizable", "behavior", fallback: "Behavior")
   /// Behind the scenes
@@ -1134,6 +1144,10 @@ internal enum L10n {
   internal static let mixer = L10n.tr("Localizable", "mixer", fallback: "Mixer")
   /// More - Name of the button that opens more actions for an item
   internal static let more = L10n.tr("Localizable", "more", fallback: "More")
+  /// More from %1$@ - Home row of movies by a director the user recently watched, such as More from Christopher Nolan
+  internal static func moreFromDirector(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "moreFromDirector", String(describing: p1), fallback: "More from %1$@")
+  }
   /// More from %1$@ - Heading for the other episodes of a season on an episode page, such as More from Season 9
   internal static func moreFromSeason(_ p1: Any) -> String {
     return L10n.tr("Localizable", "moreFromSeason", String(describing: p1), fallback: "More from %1$@")
@@ -1168,6 +1182,10 @@ internal enum L10n {
   internal static let never = L10n.tr("Localizable", "never", fallback: "Never")
   /// Never run
   internal static let neverRun = L10n.tr("Localizable", "neverRun", fallback: "Never run")
+  /// New - Short poster badge for a series with episodes since the user last watched it, used where New episodes doesn't fit
+  internal static let new = L10n.tr("Localizable", "new", fallback: "New")
+  /// New episodes - Poster badge and setting for a series that gained episodes since the user last watched it
+  internal static let newEpisodes = L10n.tr("Localizable", "newEpisodes", fallback: "New episodes")
   /// New episodes only
   internal static let newEpisodesOnly = L10n.tr("Localizable", "newEpisodesOnly", fallback: "New episodes only")
   /// Newest first - Date sort order, most recent first
@@ -1832,6 +1850,10 @@ internal enum L10n {
   internal static let sports = L10n.tr("Localizable", "sports", fallback: "Sports")
   /// Square
   internal static let square = L10n.tr("Localizable", "square", fallback: "Square")
+  /// Starring %1$@ - Home row of movies with an actor the user recently watched, such as Starring Cillian Murphy
+  internal static func starringActor(_ p1: Any) -> String {
+    return L10n.tr("Localizable", "starringActor", String(describing: p1), fallback: "Starring %1$@")
+  }
   /// Start
   internal static let start = L10n.tr("Localizable", "start", fallback: "Start")
   /// Start date
@@ -1960,6 +1982,8 @@ internal enum L10n {
   internal static let timestamp = L10n.tr("Localizable", "timestamp", fallback: "Timestamp")
   /// Title
   internal static let title = L10n.tr("Localizable", "title", fallback: "Title")
+  /// Your top genres - Setting that shows Home rows for the genres the user watches most
+  internal static let topGenreRows = L10n.tr("Localizable", "topGenreRows", fallback: "Your top genres")
   /// Top Results - Search row with the closest matches for the query
   internal static let topResults = L10n.tr("Localizable", "topResults", fallback: "Top Results")
   /// Total time

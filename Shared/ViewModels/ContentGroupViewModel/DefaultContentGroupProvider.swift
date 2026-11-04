@@ -6,6 +6,7 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import Combine
 import Defaults
 import FactoryKit
 import Foundation
@@ -16,11 +17,38 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
     @Injected(\.currentUserSession)
     var userSession: UserSession?
 
+    @Injected(\.newEpisodesTracker)
+    private var newEpisodesTracker
+
     let displayTitle: String = L10n.home
     let id: String = "default-content-group-provider"
 
+    // Rebuilds Home when its settings change, so they apply without a relaunch
+    var refreshRequests: AnyPublisher<ContentGroupRefreshRequest, Never> {
+        Defaults.publisher(
+            keys: .Customization.Home.showRecentlyAdded,
+            .Customization.Home.showRecentlyPlayed,
+            .Customization.Home.showHolidays,
+            .Customization.Home.showBecauseYouWatched,
+            .Customization.Home.showTopGenres,
+            .Customization.Home.resumeNextUp,
+            .Customization.Home.maxNextUp,
+            options: []
+        )
+        .map { ContentGroupRefreshRequest() }
+        .eraseToAnyPublisher()
+    }
+
     func makeGroups(environment: Empty) async throws -> [any ContentGroup] {
         guard let userSession else { return [] }
+
+        // Personal rows and badges load before Home appears, so nothing pops in while it's on screen
+        async let recommendations = HomeRecommendations.rows(
+            for: userSession,
+            includesWatched: Defaults[.Customization.Home.showBecauseYouWatched],
+            includesGenres: Defaults[.Customization.Home.showTopGenres]
+        )
+        async let newEpisodes: Void = newEpisodesTracker.refresh(userSession: userSession)
 
         let parameters = Paths.GetUserViewsParameters(userID: userSession.user.id)
         let userViewsPath = Paths.getUserViews(parameters: parameters)
@@ -39,11 +67,23 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
                 using: \.collectionType
             )
 
-        return _makeGroups(userViews: resolvedUserViews)
+        await newEpisodes
+
+        return await _makeGroups(userViews: resolvedUserViews, recommendations: recommendations)
     }
 
     @ContentGroupBuilder
-    private func _makeGroups(userViews: [BaseItemDto]) -> [any ContentGroup] {
+    private func _makeGroups(
+        userViews: [BaseItemDto],
+        recommendations: [HomeRecommendations.Row]
+    ) -> [any ContentGroup] {
+
+        let recommendationGroups: [any ContentGroup] = recommendations.map { row in
+            PosterGroup(
+                id: row.id,
+                library: RecommendationLibrary(title: row.title, id: row.id, entries: row.entries)
+            )
+        }
 
         #if os(tvOS)
         let cinematicSelectionContentGroup = CinematicSelectionContentGroup(
@@ -95,6 +135,9 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
             #endif
         }
 
+        // The first personal row breaks up Recently Added and the Latest rows, so neither gets buried
+        Array(recommendationGroups.prefix(1))
+
         if Defaults[.Customization.Home.showRecentlyPlayed] {
             PosterGroup(
                 library: ItemLibrary(
@@ -124,5 +167,7 @@ struct DefaultContentGroupProvider: ContentGroupProvider {
                     posterDisplayType: .landscape
                 )
             }
+
+        Array(recommendationGroups.dropFirst())
     }
 }

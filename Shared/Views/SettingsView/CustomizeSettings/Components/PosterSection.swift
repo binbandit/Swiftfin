@@ -157,6 +157,8 @@ extension CustomizeSettingsView {
                             }
                         }
                     )
+
+                    Toggle(L10n.newEpisodes, isOn: $posterConfiguration.indicators.contains(.newEpisodes))
                 }
 
                 Section {

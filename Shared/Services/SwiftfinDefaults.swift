@@ -242,6 +242,14 @@ extension Defaults.Keys {
             static var showHolidays: Key<Bool> {
                 UserKey("homeShowHolidays", default: true)
             }
+
+            static var showBecauseYouWatched: Key<Bool> {
+                UserKey("homeShowBecauseYouWatched", default: true)
+            }
+
+            static var showTopGenres: Key<Bool> {
+                UserKey("homeShowTopGenres", default: true)
+            }
         }
 
         enum Search {
