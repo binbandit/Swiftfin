@@ -6,8 +6,8 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Foundation
 import JellyfinAPI
+import SwiftUI
 
 @MainActor
 struct SearchContentGroupProvider: ContentGroupProvider {
@@ -47,11 +47,7 @@ struct SearchContentGroupProvider: ContentGroupProvider {
     @ContentGroupBuilder
     func makeGroups(environment: Environment) async throws -> [any ContentGroup] {
         if let query = environment.filters.query {
-            PosterGroup(
-                id: "search-top-results",
-                library: TopResultsLibrary(query: query, filters: environment.filters),
-                environment: .init(isHeaderButtonEnabled: false)
-            )
+            TopResultsGroup(library: TopResultsLibrary(query: query, filters: environment.filters))
         }
 
         try await ItemTypeContentGroupProvider(itemTypes: Self.itemTypes)
@@ -66,6 +62,38 @@ struct SearchContentGroupProvider: ContentGroupProvider {
 }
 
 extension SearchContentGroupProvider {
+
+    /// Top Results, which tvOS leads with the best match
+    struct TopResultsGroup: ContentGroup {
+
+        let id = "search-top-results"
+
+        private let group: PosterGroup<TopResultsLibrary>
+
+        var viewModel: PagingLibraryViewModel<TopResultsLibrary> {
+            group.viewModel
+        }
+
+        var _shouldBeResolved: Bool {
+            group._shouldBeResolved
+        }
+
+        init(library: TopResultsLibrary) {
+            self.group = PosterGroup(
+                id: id,
+                library: library,
+                environment: .init(isHeaderButtonEnabled: false)
+            )
+        }
+
+        func body(with viewModel: PagingLibraryViewModel<TopResultsLibrary>) -> some View {
+            #if os(tvOS)
+            TopResultsSection(viewModel: viewModel, displayTitle: group.displayTitle)
+            #else
+            group.body(with: viewModel)
+            #endif
+        }
+    }
 
     /// The strongest name matches among shows, movies, collections, and people
     struct TopResultsLibrary: MediaLibrary {

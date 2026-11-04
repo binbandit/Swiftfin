@@ -6,14 +6,20 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import FactoryKit
 import Foundation
 import JellyfinAPI
 
 extension BaseItemDto {
 
+    @MainActor
     func posterAccessibility(configuration: PosterConfiguration) -> PosterAccessibility {
         let playbackItem = currentProgram ?? self
-        var details = [posterAccessibilitySubtitle(using: configuration.subtitleField)]
+        // What's new comes first, as its badge leads the artwork
+        var details = [
+            showsNewEpisodesBadge(configuration: configuration) ? L10n.newEpisodes : nil,
+            posterAccessibilitySubtitle(using: configuration.subtitleField),
+        ]
 
         if let runtime = playbackItem.runtime {
             details.append(L10n.posterAccessibilityRuntime(PosterAccessibility.duration(runtime)))
@@ -34,6 +40,14 @@ extension BaseItemDto {
                 .joined(posterAccessibilityTitleComponents + (currentProgram?.posterAccessibilityTitleComponents ?? [])),
             value: PosterAccessibility.joined(details)
         )
+    }
+
+    /// The badge is the only place new episodes show, so its setting decides whether they're spoken too.
+    @MainActor
+    private func showsNewEpisodesBadge(configuration: PosterConfiguration) -> Bool {
+        guard configuration.indicators.contains(.newEpisodes), type == .series, let id else { return false }
+
+        return Container.shared.newEpisodesTracker().hasNewEpisodes(seriesID: id)
     }
 
     private var posterAccessibilityTitleComponents: [String?] {

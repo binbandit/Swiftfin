@@ -20,7 +20,24 @@ extension CustomizeSettingsView {
             case rewatching
             case played
             case unplayed
+            case newEpisodes
             case recording
+
+            /// The status that shows a newly turned on indicator, so the preview reflects it
+            init?(showing indicator: PosterIndicator) {
+                switch indicator {
+                case .progress:
+                    self = .inProgress
+                case .played:
+                    self = .played
+                case .unplayed:
+                    self = .unplayed
+                case .newEpisodes:
+                    self = .newEpisodes
+                default:
+                    return nil
+                }
+            }
 
             var displayTitle: String {
                 switch self {
@@ -32,6 +49,8 @@ extension CustomizeSettingsView {
                     L10n.played
                 case .unplayed:
                     L10n.unplayed
+                case .newEpisodes:
+                    L10n.newEpisodes
                 case .recording:
                     L10n.recording
                 }
@@ -75,6 +94,10 @@ extension CustomizeSettingsView {
             item.userData?.playbackPositionTicks = isInProgress ? Duration.seconds(600).ticks : 0
             item.userData?.playedPercentage = isInProgress ? 100 / 3 : 0
 
+            if previewItemState == .newEpisodes {
+                item.type = .series
+            }
+
             if previewItemState == .recording {
                 item.type = .program
                 item.startDate = .now.addingTimeInterval(-600)
@@ -96,7 +119,8 @@ extension CustomizeSettingsView {
                 .overlay {
                     PosterIndicatorsOverlay(
                         item: previewItem,
-                        posterDisplayType: type
+                        posterDisplayType: type,
+                        hasNewEpisodes: previewItemState == .newEpisodes
                     )
                 }
                 .posterCornerRadius(type)
@@ -178,6 +202,11 @@ extension CustomizeSettingsView {
                 }
             }
             .environment(\.posterConfiguration, posterConfiguration)
+            .onChange(of: posterConfiguration.indicators) { oldValue, newValue in
+                if let state = PreviewItemState(showing: newValue.subtracting(oldValue)) {
+                    previewItemState = state
+                }
+            }
             .navigationTitle(L10n.posters)
         }
     }

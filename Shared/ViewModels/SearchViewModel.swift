@@ -58,7 +58,7 @@ final class SearchViewModel: ViewModel {
     var groups: [any ContentGroup] {
         let groups = itemContentGroupViewModel.groups
 
-        guard let topResults = groups.first as? PosterGroup<SearchContentGroupProvider.TopResultsLibrary> else { return groups }
+        guard let topResults = groups.first as? SearchContentGroupProvider.TopResultsGroup else { return groups }
 
         let topResultIDs = topResults.viewModel.elements.ids
 

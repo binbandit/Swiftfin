@@ -92,6 +92,7 @@ struct AnyPoster: Poster {
         _id
     }
 
+    @MainActor
     func posterAccessibility(configuration: PosterConfiguration) -> PosterAccessibility {
         _poster.posterAccessibility(configuration: configuration)
     }

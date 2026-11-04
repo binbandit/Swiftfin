@@ -34,6 +34,9 @@ struct PosterIndicatorsOverlay: View {
     @SharedBaseItem
     var item: BaseItemDto
     let posterDisplayType: PosterDisplayType
+    /// Whether a series has new episodes, for an item outside the user's library such as a preview.
+    /// Otherwise their watch history decides.
+    var hasNewEpisodes: Bool?
 
     private var indicators: PosterIndicator {
         posterConfiguration.indicators
@@ -52,9 +55,9 @@ struct PosterIndicatorsOverlay: View {
     }
 
     private var showsNewEpisodesIndicator: Bool {
-        indicators.contains(.newEpisodes) &&
-            item.type == .series &&
-            item.id.map(newEpisodesTracker.hasNewEpisodes) == true
+        guard indicators.contains(.newEpisodes), item.type == .series else { return false }
+
+        return hasNewEpisodes ?? (item.id.map(newEpisodesTracker.hasNewEpisodes) == true)
     }
 
     private var showsProgressIndicator: Bool {
