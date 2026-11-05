@@ -55,6 +55,15 @@ struct BackportGlass {
         return copy
     }
 
+    /// Shows or hides this glass while keeping its other settings, for glass that toggles with focus.
+    /// Unlike switching to `identity`, its interactivity stays the same, and changing that in place moves tvOS focus.
+    func visible(_ isVisible: Bool) -> Self {
+        var copy = self
+        copy.isVisible = isVisible
+
+        return copy
+    }
+
     func selection(
         tint: Color?,
         foregroundColor: Color
@@ -178,20 +187,13 @@ struct BackportGlassEffectModifier<BackgroundShape: Shape>: ViewModifier {
         }
     }
 
+    /// Hidden glass is the identity variant on the same modifier, so showing or hiding it doesn't rebuild the content
     @available(iOS 26.0, tvOS 26.0, *)
-    @ViewBuilder
     private func glassBody(_ content: some View) -> some View {
-        if glass.isVisible {
-            content
-                .glassEffect(
-                    .regular
-                        .tint(resolvedTint)
-                        .interactive(glass.isInteractive),
-                    in: shape
-                )
-        } else {
-            content
-                .glassEffect(.identity, in: shape)
-        }
+        content
+            .glassEffect(
+                (glass.isVisible ? Glass.regular.tint(resolvedTint) : Glass.identity).interactive(glass.isInteractive),
+                in: shape
+            )
     }
 }

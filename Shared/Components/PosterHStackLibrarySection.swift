@@ -84,7 +84,7 @@ struct PosterHStackLibrarySection<Library: PagingLibrary>: View
                     .padding(.vertical, 8)
                     .backport
                     .glassEffect(
-                        isHeaderFocused ? .regular : .identity,
+                        .regular.visible(isHeaderFocused),
                         in: .capsule
                     )
                     .animation(.easeInOut(duration: 0.15), value: isHeaderFocused)

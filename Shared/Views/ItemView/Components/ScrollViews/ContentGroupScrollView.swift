@@ -21,18 +21,11 @@ extension ItemView {
         @AdaptiveLayout
         private var viewLayout
 
-        @EnvironmentObject
-        private var focusCoordinator: FocusCoordinator
-
         @ObservedObject
         var provider: ItemContentGroupProvider
 
         let groups: [any ContentGroup]
         let isEnhanced: Bool
-
-        private var isHeaderFocused: Bool {
-            focusCoordinator.lastFocusedIDs.contains(Component.header)
-        }
 
         private var backgroundImageItem: BaseItemDto {
             if provider.item.type == .person || provider.item.type == .musicArtist,
@@ -59,19 +52,8 @@ extension ItemView {
             }
             .accessibilityHidden(true)
             .overlay {
-                Rectangle()
-                    .fill(Material.regular)
-                    .mask(gradient: .linear) {
-                        if isHeaderFocused {
-                            (location: 0.3, opacity: 0)
-                        } else {
-                            (location: 0, opacity: 1)
-                        }
-
-                        (location: 1, opacity: 1)
-                    }
+                BackdropMaterial()
             }
-            .animation(.linear(duration: 0.2), value: isHeaderFocused)
         }
 
         var body: some View {
@@ -89,6 +71,33 @@ extension ItemView {
                 .trackingFrame(for: .scrollView)
                 .ignoresSafeArea(.container, edges: viewLayout.value(standard: [], large: isEnhanced ? .all : [.horizontal, .top]))
                 .scrollIndicators(.hidden)
+            }
+        }
+
+        /// Clears the material over the backdrop while the header has focus. It observes focus itself,
+        /// so focus moving between sections doesn't rebuild the page.
+        private struct BackdropMaterial: View {
+
+            @EnvironmentObject
+            private var focusCoordinator: FocusCoordinator
+
+            private var isHeaderFocused: Bool {
+                focusCoordinator.lastFocusedIDs.contains(Component.header)
+            }
+
+            var body: some View {
+                Rectangle()
+                    .fill(Material.regular)
+                    .mask(gradient: .linear) {
+                        if isHeaderFocused {
+                            (location: 0.3, opacity: 0)
+                        } else {
+                            (location: 0, opacity: 1)
+                        }
+
+                        (location: 1, opacity: 1)
+                    }
+                    .animation(.linear(duration: 0.2), value: isHeaderFocused)
             }
         }
     }

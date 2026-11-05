@@ -293,7 +293,7 @@ extension SeriesEpisodeContentGroup {
                 .frame(minHeight: 200)
                 .backport
                 .glassEffect(
-                    showsMaterial ? .regular : .identity,
+                    .regular.visible(showsMaterial),
                     in: .rect(
                         cornerRadius: cornerRadius,
                         style: .continuous

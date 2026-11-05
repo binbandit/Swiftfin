@@ -40,7 +40,9 @@ struct ItemView: View {
 
     private var buttonConfiguration = ItemActionButtons.Configuration()
 
-    @StateObject
+    /// Owned without observing it, as it changes each time focus moves between sections and only the views
+    /// reading it, which observe it themselves, need to update
+    @State
     private var focusCoordinator = FocusCoordinator(initial: Component.actions)
     @StateObject
     private var provider: ItemContentGroupProvider

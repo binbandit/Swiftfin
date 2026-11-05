@@ -70,7 +70,10 @@ final class TitleAvailability: UserSessionService {
     }
 
     func removingHidden(_ patches: some Sequence<ItemPatch>) -> [ItemPatch] {
-        patches.filter { !isHidden($0.value) }
+        // Reading the setting builds its user key, so it's read once per page rather than per title
+        guard isEnabled else { return Array(patches) }
+
+        return patches.filter { !isUnavailable($0.value) }
     }
 
     /// The series holding a merged series' remaining seasons, whose artwork stands in when the series' own was lost with its files
