@@ -109,7 +109,7 @@ struct ItemActionButtons: View {
         case .playback:
             provider.item.presentPlayButton && provider.playbackIntent?.mediaSource != nil
         case .shuffle:
-            provider.item.canShuffle
+            provider.item.canShuffle && !provider.isUnavailable
         case .record:
             provider.item.canBeRecorded
         case .refresh:

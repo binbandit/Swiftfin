@@ -37,14 +37,19 @@ struct ImageView<_Image: View, Placeholder: View, Failure: View>: View {
                         image(container.image)
                     }
                 } else if state.error != nil {
-                    failure
-                        .onAppear {
-                            sources.removeFirstSafe()
-                        }
+                    // The failed source is gone, and the next one is about to load
+                    placeholder(currentSource)
                 }
             }
             .pipeline(pipeline)
             .onDisappear(.lowerPriority)
+            // Moving on when the request fails, rather than when a failure view appears, can't miss a failure
+            // that arrives before the loading state is drawn
+            .onCompletion { result in
+                if case .failure = result {
+                    sources.removeFirstSafe()
+                }
+            }
         } else {
             failure
         }

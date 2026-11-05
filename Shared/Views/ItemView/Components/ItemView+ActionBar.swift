@@ -42,11 +42,15 @@ extension ItemView {
             VStack(alignment: alignment, spacing: viewLayout.value(standard: 8, large: 24)) {
                 if provider.item.presentPlayButton {
                     VStack(spacing: viewLayout.value(standard: 6, large: 12)) {
-                        PlayButton(provider: provider)
-                            .focused($focusedButton, equals: ItemView.Component.play)
-                            .frame(height: viewLayout.controlHeight)
+                        if provider.isUnavailable {
+                            UnavailableNotice()
+                        } else {
+                            PlayButton(provider: provider)
+                                .focused($focusedButton, equals: ItemView.Component.play)
+                                .frame(height: viewLayout.controlHeight)
 
-                        PlayButton.Details(provider: provider)
+                            PlayButton.Details(provider: provider)
+                        }
                     }
                 }
 
@@ -68,5 +72,28 @@ extension ItemView {
             .coordinatedFocus(ItemView.Component.actions)
             .multilineTextAlignment(.center)
         }
+    }
+}
+
+/// Takes Play's place when the server can't find an item's files, saying why it can't play
+private struct UnavailableNotice: View {
+
+    @AdaptiveLayout
+    private var viewLayout
+
+    var body: some View {
+        VStack(spacing: viewLayout.value(standard: 6, large: 12)) {
+            Label(L10n.unavailable, systemImage: "exclamationmark.circle")
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+                .frame(height: viewLayout.controlHeight)
+                .background(.quinary, in: .capsule)
+
+            Text(L10n.unavailableTitleDescription)
+                .font(.caption)
+                .fontWeight(.medium)
+        }
+        .foregroundStyle(.secondary)
+        .accessibilityElement(children: .combine)
     }
 }

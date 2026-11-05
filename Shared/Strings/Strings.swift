@@ -2056,6 +2056,10 @@ internal enum L10n {
   internal static let unauthorized = L10n.tr("Localizable", "unauthorized", fallback: "Unauthorized")
   /// Unauthorized user
   internal static let unauthorizedUser = L10n.tr("Localizable", "unauthorizedUser", fallback: "Unauthorized user")
+  /// Unavailable - Shown in place of Play when the server can't find a title's files
+  internal static let unavailable = L10n.tr("Localizable", "unavailable", fallback: "Unavailable")
+  /// The server can't find this title's files. - Explains why an unavailable title can't play, below Unavailable on its page
+  internal static let unavailableTitleDescription = L10n.tr("Localizable", "unavailableTitleDescription", fallback: "The server can\'t find this title\'s files.")
   /// Uninstall
   internal static let uninstall = L10n.tr("Localizable", "uninstall", fallback: "Uninstall")
   /// Are you sure you want to uninstall this plugin? The server must be restarted to complete the removal.

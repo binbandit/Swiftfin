@@ -145,6 +145,6 @@ final class SearchViewModel: ViewModel {
         let response = try await send(request)
         let availability = try requireUserSession().titleAvailability
 
-        self.suggestions = (response.value.items ?? []).filter { !availability.isUnavailable($0) }
+        self.suggestions = (response.value.items ?? []).filter { !availability.isHidden($0) }
     }
 }

@@ -64,9 +64,9 @@ extension ItemView {
 
             private var logo: some View {
                 ImageView(
-                    provider.item.imageSource(
+                    provider.item.imageSources(
                         .logo,
-                        itemID: provider.item.id,
+                        standIn: provider.item.artworkStandIn,
                         environment: ImageSourceOptions(maxHeight: 70)
                     )
                 )

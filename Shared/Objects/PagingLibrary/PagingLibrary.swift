@@ -39,18 +39,18 @@ final class LibraryPageState {
     func items(from response: Response<BaseItemDtoQueryResult>) throws -> [ItemPatch] {
         serverItemCount = response.value.items?.count ?? 0
         totalRows = response.value.totalRecordCount
-        return try availableItems(response.patches())
+        return try visibleItems(response.patches())
     }
 
     func items(from response: Response<[BaseItemDto]>) throws -> [ItemPatch] {
         serverItemCount = response.value.count
         totalRows = response.value.count
-        return try availableItems(response.patches())
+        return try visibleItems(response.patches())
     }
 
     // Every library builds its pages here, so titles without media are hidden from all of them
-    private func availableItems(_ patches: some Collection<ItemPatch>) -> [ItemPatch] {
-        let items = userSession.titleAvailability.removingUnavailable(patches)
+    private func visibleItems(_ patches: some Collection<ItemPatch>) -> [ItemPatch] {
+        let items = userSession.titleAvailability.removingHidden(patches)
 
         // Some libraries build one page from several responses
         hidesUnavailableItems = hidesUnavailableItems || items.count < patches.count

@@ -110,6 +110,7 @@ extension BaseItemDto: Poster {
     ) -> [ImageSource] {
         @ImageSourceBuilder
         var sources: [ImageSource] {
+            let standIn = artworkStandIn
             let isLandscape = displayType == .landscape
             let preferThumb = isLandscape && environment.viewContext.contains(.isThumb)
             let inheritLandscape = !isLandscape || type != .episode || environment.useParent
@@ -120,7 +121,7 @@ extension BaseItemDto: Poster {
                     imageSource(.backdrop, itemID: parentBackdropItemID, tag: parentBackdropImageTags?.first, environment: environment)
                 }
 
-                imageSource(.backdrop, itemID: id, environment: environment)
+                imageSources(.backdrop, standIn: standIn, environment: environment)
             }
 
             // Program squares represent the channel in the guide.
@@ -129,7 +130,7 @@ extension BaseItemDto: Poster {
             }
 
             if preferThumb {
-                imageSource(.thumb, itemID: id, environment: environment)
+                imageSources(.thumb, standIn: standIn, environment: environment)
 
                 if inheritLandscape {
                     imageSource(.thumb, itemID: seriesID, tag: seriesThumbImageTag, environment: environment)
@@ -150,7 +151,7 @@ extension BaseItemDto: Poster {
                 }
 
                 if preferThumb || !preferPrimary {
-                    imageSource(.backdrop, itemID: id, environment: environment)
+                    imageSources(.backdrop, standIn: standIn, environment: environment)
                 }
 
                 if type == .season || (type == .episode && environment.useParent) {
@@ -162,7 +163,7 @@ extension BaseItemDto: Poster {
                 imageSource(.primary, itemID: seriesID, tag: seriesPrimaryImageTag, environment: environment)
             }
 
-            imageSource(.primary, itemID: id, environment: environment)
+            imageSources(.primary, standIn: standIn, environment: environment)
 
             // Never substitute a parent portrait for an episode's landscape still.
             if type != .episode || !isLandscape {
@@ -173,11 +174,11 @@ extension BaseItemDto: Poster {
             imageSource(.primary, itemID: albumID, tag: albumPrimaryImageTag, environment: environment)
 
             if type == .season {
-                imageSource(.thumb, itemID: id, environment: environment)
+                imageSources(.thumb, standIn: standIn, environment: environment)
             }
 
-            imageSource(.backdrop, itemID: id, environment: environment)
-            imageSource(.thumb, itemID: id, environment: environment)
+            imageSources(.backdrop, standIn: standIn, environment: environment)
+            imageSources(.thumb, standIn: standIn, environment: environment)
 
             if inheritLandscape {
                 imageSource(.thumb, itemID: seriesID, tag: seriesThumbImageTag, environment: environment)

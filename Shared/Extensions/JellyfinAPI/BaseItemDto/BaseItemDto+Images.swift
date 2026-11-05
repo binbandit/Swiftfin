@@ -14,6 +14,23 @@ import UIKit
 @MainActor
 extension BaseItemDto {
 
+    /// For a series merged from several library folders whose artwork was lost along with some of its files,
+    /// the series holding its remaining seasons, whose artwork is shown once the series' own fails to load
+    var artworkStandIn: BaseItemDto? {
+        guard type == .series, let id else { return nil }
+
+        return Container.shared.currentUserSession()?.titleAvailability.artworkStandIn(forSeriesID: id)
+    }
+
+    /// The item's own image of a type, then the same image of its artwork stand-in for when the item's fails to load
+    func imageSources(_ type: ImageType, standIn: BaseItemDto?, environment: some WithImageSourceOptions) -> [ImageSource] {
+        [
+            imageSource(type, itemID: id, environment: environment),
+            standIn.flatMap { $0.imageSource(type, itemID: $0.id, environment: environment) },
+        ]
+            .compactMap(\.self)
+    }
+
     func imageSource(
         _ type: ImageType,
         itemID: String?,

@@ -48,9 +48,9 @@ struct CinematicSelectionContentGroup: ContentGroup {
             frameForParentView[.scrollView, default: .zero].frame
         }
 
-        private func itemSelectorImageSource(for item: BaseItemDto) -> ImageSource? {
+        private func itemSelectorImageSources(for item: BaseItemDto) -> [ImageSource] {
             if item.type == .episode {
-                item.imageSource(
+                [item.imageSource(
                     .logo,
                     itemID: item.parentLogoItemID,
                     tag: item.parentLogoImageTag,
@@ -58,11 +58,11 @@ struct CinematicSelectionContentGroup: ContentGroup {
                         maxWidth: CinematicSelectionLayout.logoMaxWidth,
                         maxHeight: CinematicSelectionLayout.logoMaxHeight
                     )
-                )
+                )].compactMap(\.self)
             } else {
-                item.imageSource(
+                item.imageSources(
                     .logo,
-                    itemID: item.id,
+                    standIn: item.artworkStandIn,
                     environment: ImageSourceOptions(
                         maxWidth: CinematicSelectionLayout.logoMaxWidth,
                         maxHeight: CinematicSelectionLayout.logoMaxHeight
@@ -80,7 +80,7 @@ struct CinematicSelectionContentGroup: ContentGroup {
             ) { item in
                 router.route(to: .item(item: item.snapshot))
             } topContent: { item in
-                ImageView(itemSelectorImageSource(for: item.snapshot))
+                ImageView(itemSelectorImageSources(for: item.snapshot))
                     .placeholder { _ in
                         EmptyView()
                     }

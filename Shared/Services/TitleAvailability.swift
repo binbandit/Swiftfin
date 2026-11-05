@@ -13,10 +13,12 @@ import Get
 import JellyfinAPI
 import Logging
 
-/// Finds titles whose media files the server can no longer open, such as after a drive fails, so they can be hidden.
+/// Finds titles whose media files the server can no longer open, such as after a drive fails, so their pages can say so
+/// and, with the Hide unavailable titles setting, so they can be hidden.
 ///
 /// The server keeps listing these titles with their metadata, so a background check asks it to open files instead.
 /// Titles in the same storage folder, like `/media/Movies`, are lost together, so a few probes decide a whole folder.
+/// A series merged from several folders can lose some of them, and then borrows artwork from the series in one that's left.
 /// Results are cached per server so they apply before rows load, and are checked again daily.
 @MainActor
 final class TitleAvailability: UserSessionService {
@@ -32,7 +34,7 @@ final class TitleAvailability: UserSessionService {
     private var firstCheckWaiters: [UUID: CheckedContinuation<Void, Never>] = [:]
     private var cancellables: Set<AnyCancellable> = []
 
-    /// Sends when the hidden titles change, after a check finds a difference or the setting changes
+    /// Sends when the hidden titles change, after a check finds a difference while hiding or the setting changes
     var changes: AnyPublisher<Void, Never> {
         changeSubject.eraseToAnyPublisher()
     }
@@ -41,9 +43,9 @@ final class TitleAvailability: UserSessionService {
         Defaults[.Customization.hideUnavailableTitles]
     }
 
-    /// Only a definite missing file hides a title. Titles that haven't been checked are shown.
+    /// Only a definite missing file makes a title unavailable. Titles that haven't been checked are available.
     func isUnavailable(_ item: BaseItemDto) -> Bool {
-        guard isEnabled, let results else { return false }
+        guard let results else { return false }
 
         switch item.type {
         case .episode:
@@ -55,11 +57,25 @@ final class TitleAvailability: UserSessionService {
     }
 
     func isUnavailable(id: String?) -> Bool {
-        isEnabled && results?.unavailableTitleIDs.contains(id) == true
+        results?.unavailableTitleIDs.contains(id) == true
     }
 
-    func removingUnavailable(_ patches: some Sequence<ItemPatch>) -> [ItemPatch] {
-        patches.filter { !isUnavailable($0.value) }
+    /// Whether rows leave out a title, which only the Hide unavailable titles setting does
+    func isHidden(_ item: BaseItemDto) -> Bool {
+        isEnabled && isUnavailable(item)
+    }
+
+    func isHidden(id: String?) -> Bool {
+        isEnabled && isUnavailable(id: id)
+    }
+
+    func removingHidden(_ patches: some Sequence<ItemPatch>) -> [ItemPatch] {
+        patches.filter { !isHidden($0.value) }
+    }
+
+    /// The series holding a merged series' remaining seasons, whose artwork stands in when the series' own was lost with its files
+    func artworkStandIn(forSeriesID id: String) -> BaseItemDto? {
+        results?.artworkStandIns[id]
     }
 
     /// Waits a few seconds for a server's first check, so its first rows don't show titles that are about to be hidden
@@ -84,16 +100,12 @@ final class TitleAvailability: UserSessionService {
 
     func didStart(userSession: UserSession) {
         Defaults.publisher(.Customization.hideUnavailableTitles, options: [])
-            .sink { [weak self, weak userSession] change in
+            .sink { [weak self, weak userSession] _ in
                 guard let self, let userSession else { return }
 
                 // Loaded rows reload with or without the hidden titles
                 userSession.items.libraryDidChange()
                 self.changeSubject.send()
-
-                if change.newValue {
-                    self.startCheck(userSession: userSession)
-                }
             }
             .store(in: &cancellables)
 
@@ -143,7 +155,7 @@ final class TitleAvailability: UserSessionService {
     }
 
     private func startCheck(userSession: UserSession) {
-        guard isEnabled, check == nil else { return }
+        guard check == nil else { return }
 
         check = Task {
             await runCheck(userSession: userSession)
@@ -178,7 +190,7 @@ final class TitleAvailability: UserSessionService {
             )
 
             // Rows on screen keep their titles until they next load
-            if didChange {
+            if didChange, isEnabled {
                 changeSubject.send()
             }
         } catch {
@@ -209,6 +221,8 @@ private struct CheckResults: Codable {
     let unavailableTitleIDs: Set<String>
     /// Season folders whose episode files are gone
     let missingSeasonIDs: Set<String>
+    /// Partly unavailable merged series, by ID, and the series holding their remaining seasons
+    let artworkStandIns: [String: BaseItemDto]
 
     private static func url(serverID: String) -> URL {
         URL.cachesDirectory
@@ -262,6 +276,8 @@ private final class AvailabilityCheck {
     private var availableRequestSlots = maxConcurrentRequests
     private var requestQueue: [CheckedContinuation<Void, Never>] = []
     private(set) var requestCount = 0
+    /// Partly unavailable merged series, by ID, and the series holding their latest remaining season
+    private var standInSeriesIDs: [String: String] = [:]
 
     init(userSession: UserSession, previous: CheckResults?) {
         self.userSession = userSession
@@ -285,7 +301,12 @@ private final class AvailabilityCheck {
         await unavailableTitleIDs.formUnion(unavailableShowIDs(in: catalog, missingSeasonIDs: missingSeasonIDs))
         await unavailableTitleIDs.formUnion(unavailableCollectionIDs(in: catalog, unavailableTitleIDs: unavailableTitleIDs))
 
-        return CheckResults(checkedAt: .now, unavailableTitleIDs: unavailableTitleIDs, missingSeasonIDs: missingSeasonIDs)
+        return await CheckResults(
+            checkedAt: .now,
+            unavailableTitleIDs: unavailableTitleIDs,
+            missingSeasonIDs: missingSeasonIDs,
+            artworkStandIns: artworkStandIns()
+        )
     }
 
     // MARK: - Catalog
@@ -482,6 +503,11 @@ private final class AvailabilityCheck {
             return episodes.isNotEmpty && episodes.allSatisfy { missingSeasonIDs.contains($0.seasonID) } ? [seasonID] : []
         }
 
+        // Seasons stored in another library folder are listed with the ID of the series there, whose artwork can stand in
+        if let standInID = seasons.last(where: { $0.path != nil && !missingSeasonIDs.contains($0.id) })?.seriesID, standInID != id {
+            standInSeriesIDs[id] = standInID
+        }
+
         return Self.unavailableIDs(of: id, seasons: seasons) { emptySeasonIDs.contains($0.id) }
     }
 
@@ -524,6 +550,30 @@ private final class AvailabilityCheck {
         guard storedSeasons.isNotEmpty, unavailableIDs.count == storedSeasons.count else { return unavailableIDs }
 
         return unavailableIDs.union([seriesID])
+    }
+
+    // MARK: - Artwork
+
+    /// The series standing in for partly unavailable merged series, with their image tags. Errors keep the previous ones.
+    private func artworkStandIns() async -> [String: BaseItemDto] {
+        guard standInSeriesIDs.isNotEmpty else { return [:] }
+
+        var parameters = Paths.GetItemsParameters()
+        parameters.enableTotalRecordCount = false
+        parameters.enableUserData = false
+        parameters.ids = Array(Set(standInSeriesIDs.values))
+        parameters.imageTypeLimit = 1
+        parameters.userID = userSession.user.id
+
+        guard let series = try? await limited({
+            try await self.userSession.client.send(Paths.getItems(parameters: parameters)).value.items ?? []
+        }) else {
+            return previous?.artworkStandIns ?? [:]
+        }
+
+        let seriesByID = Dictionary(series.compactMap { item in item.id.map { ($0, item) } }) { first, _ in first }
+
+        return standInSeriesIDs.compactMapValues { seriesByID[$0] }
     }
 
     // MARK: - Requests

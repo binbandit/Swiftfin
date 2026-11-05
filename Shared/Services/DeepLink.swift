@@ -66,7 +66,11 @@ struct DeepLink: Equatable {
             // Playback presents over the item's page, so leaving the player lands there
             await tabCoordinator.open(.item(id: id))
 
-            guard let userSession = Container.shared.currentUserSession() else { return }
+            // The page says when the server can't find the item's files, where a player would only fail
+            guard let userSession = Container.shared.currentUserSession(),
+                  let item = try? await userSession.getFullItem(id: id).snapshot,
+                  !userSession.titleAvailability.isUnavailable(item)
+            else { return }
 
             Container.shared.userSessionManager().playItem(id: id, userSession: userSession)
         }

@@ -25,6 +25,9 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
     var isPresentingDeleteConfirmation = false
     @Published
     private(set) var playbackIntent: PlaybackIntent?
+    /// Whether the server can't find the item's files, leaving nothing to play
+    @Published
+    private(set) var isUnavailable = false
 
     let id: String
 
@@ -79,7 +82,8 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         let entry = try await userSession.getFullItem(item)
         let fullItem = entry.snapshot
 
-        let newPlaybackIntent = try await resolvePlaybackIntent(
+        let newIsUnavailable = userSession.titleAvailability.isUnavailable(fullItem)
+        let newPlaybackIntent = newIsUnavailable ? nil : try await resolvePlaybackIntent(
             for: fullItem,
             userSession: userSession
         )
@@ -92,6 +96,7 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         $item = entry
         localTrailers = newLocalTrailers ?? []
         playbackIntent = newPlaybackIntent
+        isUnavailable = newIsUnavailable
         randomBackdropItem = newRandomBackdropItem
 
         return try await _makeGroups(
