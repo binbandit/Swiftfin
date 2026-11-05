@@ -1,0 +1,19 @@
+//
+// Swiftfin is subject to the terms of the Mozilla Public
+// License, v2.0. If a copy of the MPL was not distributed with this
+// file, you can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
+//
+
+// Sign-in tiles on tvOS for accounts that a server hides from its public user list, shown only on that server.
+// Copy this file to FamilyUsers.xcconfig, which is gitignored, and replace the value.
+// Builds without that file show the server's public users only.
+//
+// FAMILY_USERS is URL-safe base64 of JSON with the server's ID (GET /System/Info/Public) and its users,
+// whose fields are named as the Jellyfin API returns them. This example decodes to:
+//   {"serverID":"0123456789abcdef0123456789abcdef","users":[{"Id":"11111111111111111111111111111111","Name":"Avery"},{"Id":"22222222222222222222222222222222","Name":"Quinn"}]}
+// Encode with: base64 -i users.json | tr -d '\n' | tr '+/' '-_'
+// URL-safe because xcconfig reads "//" as the start of a comment.
+
+FAMILY_USERS = eyJzZXJ2ZXJJRCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidXNlcnMiOlt7IklkIjoiMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJOYW1lIjoiQXZlcnkifSx7IklkIjoiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIiLCJOYW1lIjoiUXVpbm4ifV19

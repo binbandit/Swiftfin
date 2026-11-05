@@ -89,8 +89,9 @@ final class UserSignInViewModel: ObservableObject {
 
     @Published
     private(set) var isQuickConnectEnabled = false
+    /// The server's public users followed by the family users configured for it
     @Published
-    private(set) var publicUsers: [UserDto] = []
+    private(set) var publicUsers: [UserDto]
     @Published
     private(set) var serverDisclaimer: String? = nil
 
@@ -98,9 +99,16 @@ final class UserSignInViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     let server: ServerState
+    /// Whether this build lists family users for the server, which hides them from its public list
+    let hasFamilyUsers: Bool
 
     init(server: ServerState) {
+        let familyUsers = FamilyUsers.users(forServer: server.id)
+
         self.server = server
+        self.hasFamilyUsers = familyUsers.isNotEmpty
+        // Family users are local, so their tiles show before the server responds
+        self.publicUsers = familyUsers
     }
 
     @Function(\Action.Cases.getPublicData)
@@ -273,7 +281,12 @@ final class UserSignInViewModel: ObservableObject {
         let request = Paths.getPublicUsers
         let response = try await server.client.send(request)
 
-        return response.value
+        // A family user the server also lists publicly keeps the server's copy
+        let publicUserIDs = Set(response.value.map(\.id))
+        let familyUsers = FamilyUsers.users(forServer: server.id)
+            .filter { !publicUserIDs.contains($0.id) }
+
+        return response.value + familyUsers
     }
 
     private func retrieveServerDisclaimer() async throws -> String? {

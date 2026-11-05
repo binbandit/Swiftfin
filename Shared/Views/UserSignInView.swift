@@ -233,7 +233,8 @@ struct UserSignInView: View {
     // MARK: - Public Users Section
 
     private var publicUsersSection: some View {
-        Section(L10n.publicUsers) {
+        // Family users aren't public, so a list with them is just "Users"
+        Section(viewModel.hasFamilyUsers ? L10n.users : L10n.publicUsers) {
             if viewModel.publicUsers.isEmpty {
                 Text(L10n.noPublicUsers)
                     .font(.callout)
@@ -317,7 +318,18 @@ struct UserSignInView: View {
         ) {
             signInSection
         } trailingContentView: {
-            publicUsersSection
+            if viewModel.publicUsers.isEmpty {
+                publicUsersSection
+            } else {
+                // Tiles that don't fit scroll, header included, instead of pushing the split layout off screen.
+                // The VStack, spaced like the split columns, makes the section's header and tiles one scrolling view.
+                // It may use the column's bottom edge padding, so two rows fit without any scrolling.
+                VStack(alignment: .leading, spacing: 22) {
+                    publicUsersSection
+                }
+                .scrollIfLargerThanContainer(alignment: .top)
+                .padding(.bottom, -viewLayout.edgePadding)
+            }
         }
         #endif
     }

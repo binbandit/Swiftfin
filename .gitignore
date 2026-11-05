@@ -104,6 +104,7 @@ Shared/Generated/Strings.swift
 Tools/Screenshots/Output/**/Frame/
 Tools/Screenshots/Raw/
 XcodeConfig/DevelopmentTeam.xcconfig
+XcodeConfig/FamilyUsers.xcconfig
 
 # Other
 .idea

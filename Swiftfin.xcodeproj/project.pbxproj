@@ -283,6 +283,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DevelopmentTeam.xcconfig,
+				FamilyUsers.example.xcconfig,
+				FamilyUsers.xcconfig,
 				Shared.xcconfig,
 			);
 			target = 5377CBF0263B596A003A4E83 /* Swiftfin iOS */;
@@ -291,6 +293,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DevelopmentTeam.xcconfig,
+				FamilyUsers.example.xcconfig,
+				FamilyUsers.xcconfig,
 				Shared.xcconfig,
 			);
 			target = 5358705F2669D21600D05A09 /* Swiftfin tvOS */;
