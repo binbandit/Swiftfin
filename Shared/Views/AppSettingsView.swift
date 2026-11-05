@@ -59,7 +59,7 @@ struct AppSettingsView: View {
     var body: some View {
         Form(image: .jellyfinBlobBlue) {
 
-            Section(L10n.swiftfin) {
+            Section(L10n.appName) {
                 ChevronButton(L10n.aboutApp) {
                     router.route(to: .aboutApp)
                 }

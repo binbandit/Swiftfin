@@ -5,11 +5,24 @@
 	<key>AppGroupIdentifier</key>
 	<string>$(APP_GROUP_IDENTIFIER)</string>
 	<key>CFBundleDisplayName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>Sofa</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleIcons</key>
+	<dict>
+		<!-- The asset compiler emits the iOS dictionary format; tvOS requires an array. -->
+		<key>CFBundleAlternateIcons</key>
+		<array>
+			<string>AppIcon-dark-blue</string>
+			<string>AppIcon-dark-jellyfin</string>
+			<string>AppIcon-dark-green</string>
+			<string>AppIcon-dark-orange</string>
+			<string>AppIcon-dark-red</string>
+			<string>AppIcon-dark-yellow</string>
+		</array>
+	</dict>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -34,6 +47,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundledisplayTitle</key>
 	<string>Jellyfin</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>youtube</string>
