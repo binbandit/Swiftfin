@@ -125,6 +125,11 @@ struct NowPlayableLanguageOptions {
         if enabled, option.isAutomaticAudibleLanguageOption() || option.isAutomaticLegibleLanguageOption() {
             let audible = option.isAutomaticAudibleLanguageOption()
             item.configuration.followSystemPreferences(audio: audible, subtitles: !audible)
+
+            if !audible {
+                StoredValues[.User.subtitleChoice] = nil
+            }
+
             item.mediaPreferences?.update(.current)
             return true
         }

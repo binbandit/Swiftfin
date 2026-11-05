@@ -1574,6 +1574,8 @@ internal enum L10n {
   internal static let rememberLayout = L10n.tr("Localizable", "rememberLayout", fallback: "Remember layout")
   /// Remember sorting
   internal static let rememberSorting = L10n.tr("Localizable", "rememberSorting", fallback: "Remember sorting")
+  /// Keeps subtitles on or off, in the language you chose, for every episode, show and movie you watch next. - Video player settings, explains Remember track selection for subtitles
+  internal static let rememberSubtitleSelectionDescription = L10n.tr("Localizable", "rememberSubtitleSelectionDescription", fallback: "Keeps subtitles on or off, in the language you chose, for every episode, show and movie you watch next.")
   /// Remember track selection
   internal static let rememberTrackSelection = L10n.tr("Localizable", "rememberTrackSelection", fallback: "Remember track selection")
   /// Remembers your selected track the next time you play this item.

@@ -69,6 +69,7 @@ extension UserState: Storable {}
 extension Array: Storable where Element: Storable {}
 extension Bool: Storable {}
 extension Int: Storable {}
+extension Optional: Storable where Wrapped: Storable {}
 extension String: Storable {}
 
 extension StoredValues.Keys {
@@ -185,6 +186,13 @@ extension StoredValues.Keys {
             CurrentUserKey(
                 field: "forceSubtitleBurnIn",
                 default: false
+            )
+        }
+
+        static var subtitleChoice: Key<MediaPlaybackPreferences.SubtitleChoice?> {
+            CurrentUserKey(
+                field: "subtitleChoice",
+                default: nil
             )
         }
     }

@@ -102,6 +102,10 @@ extension MediaPlayerItem {
             preservingPreferences: preservingTrackPreferences
         )
 
+        if let subtitle, !preservingTrackPreferences {
+            MediaPlaybackPreferences.SubtitleChoice.remember(subtitle, in: subtitleStreams)
+        }
+
         if needsRebuild {
             mediaSession?.reload(self)
         } else {

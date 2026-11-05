@@ -57,9 +57,16 @@ extension ItemActionButtons {
         private var subtitleStreamSelection: Binding<Int?> {
             Binding(
                 get: {
-                    provider.playbackIntent?.configuration.subtitleStreamIndex
-                        ?? provider.playbackIntent?.mediaSource?.defaultSubtitleStreamIndex
-                        ?? -1
+                    guard let intent = provider.playbackIntent, let source = intent.mediaSource else { return -1 }
+
+                    // The track playback starts with, including remembered and accessibility choices
+                    return MediaPlaybackPreferences.current
+                        .selection(
+                            in: source,
+                            audio: intent.configuration.audioStreamIndex,
+                            subtitle: intent.configuration.subtitleStreamIndex
+                        )
+                        .subtitle ?? -1
                 },
                 set: { provider.select(.subtitleStreamIndex($0)) }
             )

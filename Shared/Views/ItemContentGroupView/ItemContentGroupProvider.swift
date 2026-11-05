@@ -319,10 +319,14 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
         switch selection {
         case let .mediaSource(source):
             intent.configuration.selectMediaSource(id: source?.id)
+
         case let .audioStreamIndex(index):
             intent.configuration.selectTracks(audio: index ?? -1)
+
         case let .subtitleStreamIndex(index):
             intent.configuration.selectTracks(subtitle: index ?? -1)
+            MediaPlaybackPreferences.SubtitleChoice.remember(index ?? -1, in: intent.mediaSource?.mediaStreams ?? [])
+
         case let .bitrate(bitrate):
             intent.configuration.requestedBitrate = bitrate
         }

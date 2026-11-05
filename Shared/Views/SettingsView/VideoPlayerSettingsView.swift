@@ -370,6 +370,11 @@ struct VideoPlayerSettingsView: View {
                 SubtitlePlaybackMode.smart.displayTitle,
                 value: SubtitlePlaybackMode.smart.description
             )
+
+            LabeledContent(
+                L10n.rememberTrackSelection,
+                value: L10n.rememberSubtitleSelectionDescription
+            )
         }
 
         Section {
