@@ -132,6 +132,11 @@ struct ViewLayout: Equatable {
         value(standard: 10, large: 20)
     }
 
+    /// Space between the top of the video player's supplement container and its tabs.
+    var supplementTabsTopPadding: CGFloat {
+        value(standard: edgePadding, large: edgePadding / 2)
+    }
+
     var toolbarButtonSpacing: CGFloat {
         UIDevice.supportsLiquidGlass ? value(standard: 4, large: 20) : value(standard: 0, large: 16)
     }

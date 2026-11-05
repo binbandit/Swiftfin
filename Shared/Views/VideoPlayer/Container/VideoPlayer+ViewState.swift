@@ -311,11 +311,9 @@ extension VideoPlayer {
             case .controls:
                 var elements: Set<Element> = [.progress, .toolbar, .playbackButtons, .dimming]
 
-                #if os(iOS)
                 if overlayActions.isNotEmpty {
                     elements.insert(.overlayActions)
                 }
-                #endif
 
                 if supplements.isNotEmpty {
                     elements.insert(.supplements)

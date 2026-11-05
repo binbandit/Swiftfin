@@ -77,13 +77,21 @@ extension VideoPlayer {
                             Text(action.button.title)
                         }
                     }
-                    .buttonStyle(OverlayActionButtonStyle())
+                    #if os(tvOS)
+                    // Match the supplement tabs that share this row, so only focus turns a control white.
+                    .buttonStyle(.capsule)
+                        .controlSize(.large)
+                        .foregroundStyle(.white)
+                    #else
+                        .buttonStyle(OverlayActionButtonStyle())
+                    #endif
                     .coordinatedFocus(action.id.focusID, selection: $focusedAction)
                 }
             }
         }
     }
 
+    #if os(iOS)
     private struct OverlayActionButtonStyle: ButtonStyle {
 
         @AdaptiveLayout
@@ -114,4 +122,5 @@ extension VideoPlayer {
                 .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
         }
     }
+    #endif
 }

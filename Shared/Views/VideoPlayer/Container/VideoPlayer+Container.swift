@@ -778,24 +778,18 @@ extension VideoPlayer {
                 heightAnchor,
             ])
 
-            let playbackControlsBottomAnchor = playbackControlsView.bottomAnchor.constraint(
-                equalTo: view.bottomAnchor,
-                constant: -dismissedSupplementContainerOffset
-            )
-            playbackControlsBottomAnchor.priority = .defaultHigh
-
             NSLayoutConstraint.activate([
                 playbackControlsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 playbackControlsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 playbackControlsView.topAnchor.constraint(equalTo: view.topAnchor),
-                playbackControlsBottomAnchor,
-                playbackControlsView.bottomAnchor.constraint(
-                    lessThanOrEqualTo: overlayActionsView.topAnchor,
-                    constant: -viewLayout.edgePadding
-                ),
-                overlayActionsView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: viewLayout.edgePadding),
+                playbackControlsView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -dismissedSupplementContainerOffset),
+                // Overlay actions end the supplement tab row, so they hold their place as the controls come and go.
+                overlayActionsView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: viewLayout.edgePadding),
                 overlayActionsView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -viewLayout.edgePadding),
-                overlayActionsView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -viewLayout.edgePadding),
+                overlayActionsView.topAnchor.constraint(
+                    equalTo: supplementContainerView.topAnchor,
+                    constant: viewLayout.supplementTabsTopPadding
+                ),
             ])
             #else
             NSLayoutConstraint.activate([
@@ -982,6 +976,23 @@ extension VideoPlayer {
 
         override func shouldUpdateFocus(in context: UIFocusUpdateContext) -> Bool {
             guard super.shouldUpdateFocus(in: context) else { return false }
+
+            // Focusing a tab opens its supplement, which hides overlay actions. Moving down from the
+            // controls reaches an action at the end of the tab row first, one move from the tabs.
+            if viewState.isPresentingOverlayActions,
+               context.focusHeading.contains(.down),
+               context.previouslyFocusedView?.isDescendant(of: playbackControlsView) == true,
+               context.nextFocusedView?.isDescendant(of: supplementContainerView) == true,
+               let action = viewState.overlayActions.first
+            {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, viewState.isPresentingOverlayActions else { return }
+
+                    viewState.focusCoordinator.focus(action.id.focusID)
+                }
+
+                return false
+            }
 
             // A lone title is an entry point, not a focus stop. Wait for its content
             // to appear before handing focus to the supplement's preferred control.

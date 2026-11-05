@@ -1204,6 +1204,8 @@ internal enum L10n {
   internal static let next = L10n.tr("Localizable", "next", fallback: "Next")
   /// Next chapter
   internal static let nextChapter = L10n.tr("Localizable", "nextChapter", fallback: "Next chapter")
+  /// Next Episode - Video player button that plays the next episode during the credits
+  internal static let nextEpisode = L10n.tr("Localizable", "nextEpisode", fallback: "Next Episode")
   /// Next item
   internal static let nextItem = L10n.tr("Localizable", "nextItem", fallback: "Next item")
   /// Next Up
@@ -1818,10 +1820,14 @@ internal enum L10n {
   internal static let simple = L10n.tr("Localizable", "simple", fallback: "Simple")
   /// Size
   internal static let size = L10n.tr("Localizable", "size", fallback: "Size")
-  /// Skip
-  internal static let skip = L10n.tr("Localizable", "skip", fallback: "Skip")
+  /// Skip Credits - Video player button that skips past the end credits
+  internal static let skipCredits = L10n.tr("Localizable", "skipCredits", fallback: "Skip Credits")
   /// Skip duplicates
   internal static let skipDuplicates = L10n.tr("Localizable", "skipDuplicates", fallback: "Skip duplicates")
+  /// Skip Intro - Video player button that skips past the opening titles
+  internal static let skipIntro = L10n.tr("Localizable", "skipIntro", fallback: "Skip Intro")
+  /// Skip Recap - Video player button that skips past the previously-on recap
+  internal static let skipRecap = L10n.tr("Localizable", "skipRecap", fallback: "Skip Recap")
   /// Slider
   internal static let slider = L10n.tr("Localizable", "slider", fallback: "Slider")
   /// Slow scrub

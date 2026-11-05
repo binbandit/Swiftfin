@@ -30,8 +30,18 @@ struct MediaSegment: Identifiable, Hashable, Sendable {
         guard self.end > self.start else { return nil }
     }
 
+    /// The skip button's title, for the segment types viewers skip.
+    var skipTitle: String? {
+        switch type {
+        case .intro: L10n.skipIntro
+        case .recap: L10n.skipRecap
+        case .outro: L10n.skipCredits
+        default: nil
+        }
+    }
+
     func skipTarget(at position: Duration, duration: Duration?) -> Duration? {
-        guard type == .intro || type == .outro else { return nil }
+        guard skipTitle != nil else { return nil }
 
         let target = duration.map { min(end, $0) } ?? end
         guard position >= start, position < target else { return nil }
