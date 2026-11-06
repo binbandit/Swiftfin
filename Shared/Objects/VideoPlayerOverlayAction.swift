@@ -6,6 +6,8 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
+import JellyfinAPI
+
 @MainActor
 protocol VideoPlayerOverlayActionProviding {
 
@@ -19,17 +21,21 @@ struct VideoPlayerOverlayAction: Identifiable {
     let id: String
     let title: String
     let systemImage: String?
+    /// The item the action plays, previewed beside it.
+    let preview: BaseItemDto?
     let action: @MainActor () -> Void
 
     init(
         id: String,
         title: String,
         systemImage: String? = nil,
+        preview: BaseItemDto? = nil,
         action: @escaping @MainActor () -> Void
     ) {
         self.id = id
         self.title = title
         self.systemImage = systemImage
+        self.preview = preview
         self.action = action
     }
 }

@@ -112,8 +112,13 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
         }), let title = segment.skipTitle else { return [] }
 
         // During the credits, start the next episode as autoplay would, rather than seeking to the end first.
-        if segment.type == .outro, Self.autoPlayEpisode(after: mediaSession) != nil {
-            return [VideoPlayerOverlayAction(id: segment.id, title: L10n.nextEpisode, systemImage: "forward.end.fill") { [
+        if segment.type == .outro, let next = Self.autoPlayEpisode(after: mediaSession) {
+            return [VideoPlayerOverlayAction(
+                id: segment.id,
+                title: L10n.nextEpisode,
+                systemImage: "forward.end.fill",
+                preview: next.item
+            ) { [
                 weak self,
                 weak item
             ] in
