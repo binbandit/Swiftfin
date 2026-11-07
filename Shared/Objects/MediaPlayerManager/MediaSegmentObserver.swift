@@ -23,7 +23,12 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
     private weak var mediaSession: MediaSession?
     private(set) var segments: [MediaSegment] = []
 
+    /// The segment that can be skipped now. It changes only when playback crosses a segment boundary,
+    /// so the controls reading `overlayActions` don't redraw, and rebuild their open menus, every frame.
+    private var activeSegment: MediaSegment?
+
     /// Segments skipped or played past, which stay hidden until playback returns before their start.
+    @ObservationIgnored
     private var passedSegmentIDs: Set<String> = []
 
     @ObservationIgnored
@@ -52,6 +57,10 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
                     guard !Task.isCancelled, let self, let item, self.mediaSession?.playbackItem === item else { return }
 
                     segments = MediaSegment.segments(from: values, itemID: itemID)
+
+                    if let position = self.mediaSession?.seconds {
+                        updateSegments(at: position)
+                    }
                 } catch {
                     guard !Task.isCancelled else { return }
 
@@ -64,7 +73,7 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
                 mediaSession?.seconds
             } onChange: { [weak self] position in
                 if let position {
-                    self?.updatePassedSegments(at: position)
+                    self?.updateSegments(at: position)
                 }
             }
         }
@@ -75,21 +84,27 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
                 positionObservation = nil
                 segments = []
                 passedSegmentIDs = []
+                activeSegment = nil
                 self.mediaSession = nil
                 item = nil
             }
         }
     }
 
-    private func updatePassedSegments(at position: Duration) {
-        let passedIDs = Set(
+    private func updateSegments(at position: Duration) {
+        passedSegmentIDs = Set(
             segments
                 .filter { position >= $0.end || (position >= $0.start && passedSegmentIDs.contains($0.id)) }
                 .map(\.id)
         )
 
-        if passedIDs != passedSegmentIDs {
-            passedSegmentIDs = passedIDs
+        let duration = mediaSession?.playbackState.duration ?? mediaSession?.item.runtime
+        let segment = mediaSession?.canSeek == true ? segments.first {
+            !passedSegmentIDs.contains($0.id) && $0.skipTarget(at: position, duration: duration) != nil
+        } : nil
+
+        if segment?.id != activeSegment?.id {
+            activeSegment = segment
         }
     }
 
@@ -103,13 +118,8 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
 
     var overlayActions: [VideoPlayerOverlayAction] {
         guard let mediaSession, let item, mediaSession.playbackItem === item,
-              mediaSession.state == .playback, mediaSession.canSeek, !mediaSession.isSeeking else { return [] }
-
-        let duration = mediaSession.playbackState.duration ?? mediaSession.item.runtime
-
-        guard let segment = segments.first(where: {
-            !passedSegmentIDs.contains($0.id) && $0.skipTarget(at: mediaSession.seconds, duration: duration) != nil
-        }), let title = segment.skipTitle else { return [] }
+              mediaSession.state == .playback, !mediaSession.isSeeking,
+              let segment = activeSegment, let title = segment.skipTitle else { return [] }
 
         // During the credits, start the next episode as autoplay would, rather than seeking to the end first.
         if segment.type == .outro, let next = Self.autoPlayEpisode(after: mediaSession) {
@@ -143,6 +153,7 @@ final class MediaSegmentObserver: MediaSessionObserver, VideoPlayerOverlayAction
 
             // A seek can land just short of the target, which must not bring the button back.
             passedSegmentIDs.insert(segment.id)
+            activeSegment = nil
             mediaSession.seek(to: target)
         }]
     }

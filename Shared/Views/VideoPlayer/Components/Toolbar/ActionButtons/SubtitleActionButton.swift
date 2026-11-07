@@ -74,6 +74,13 @@ extension VideoPlayer.PlaybackControls.Toolbar.ActionButtons {
                 .filter { !secondary || $0.index != playbackItem.subtitleTrackIndex(secondary: false) }
         }
 
+        /// Image subtitles, such as PGS and VobSub, are pictures at a fixed size, so the size setting can't change them.
+        private var isShowingImageSubtitles: Bool {
+            playbackItem.subtitlesEnabled && streams(secondary: false)
+                .first(property: \.index, equalTo: playbackItem.subtitleTrackIndex(secondary: false))?
+                .isTextSubtitleStream == false
+        }
+
         private var isEnabled: Binding<Bool> {
             Binding(
                 get: { playbackItem.subtitlesEnabled },
@@ -174,14 +181,24 @@ extension VideoPlayer.PlaybackControls.Toolbar.ActionButtons {
                 }
                 .menuOrder(.fixed)
 
-                Picker(selection: $subtitleSize) {
-                    _CaseIterablePickerContent<SubtitleSize>()
-                } label: {
-                    Text(L10n.size)
+                if isShowingImageSubtitles {
+                    // A disabled picker still opens on tvOS, so explain with an inert row instead.
+                    Button {} label: {
+                        Text(L10n.size)
 
-                    Text(subtitleSize.displayTitle)
+                        Text(L10n.subtitleSizeImageUnavailable)
+                    }
+                    .disabled(true)
+                } else {
+                    Picker(selection: $subtitleSize) {
+                        _CaseIterablePickerContent<SubtitleSize>()
+                    } label: {
+                        Text(L10n.size)
+
+                        Text(subtitleSize.displayTitle)
+                    }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.menu)
             }
         }
     }

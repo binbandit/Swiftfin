@@ -386,7 +386,8 @@ struct VideoPlayerSettingsView: View {
         } header: {
             Text(L10n.textStyle)
         } footer: {
-            Text(L10n.captionStyleSettingsDescription)
+            // One paragraph: tvOS stops scrolling at the last row, so a taller footer gets cut off.
+            Text(L10n.subtitleSizeDescription + " " + L10n.captionStyleSettingsDescription)
         }
     }
 }

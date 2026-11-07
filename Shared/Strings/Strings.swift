@@ -1920,6 +1920,10 @@ internal enum L10n {
   internal static let subtitleOffset = L10n.tr("Localizable", "subtitleOffset", fallback: "Subtitle offset")
   /// Subtitles
   internal static let subtitles = L10n.tr("Localizable", "subtitles", fallback: "Subtitles")
+  /// Size doesn't change image subtitles, such as those from Blu-rays and DVDs. - Video player settings footer under Text style
+  internal static let subtitleSizeDescription = L10n.tr("Localizable", "subtitleSizeDescription", fallback: "Size doesn\'t change image subtitles, such as those from Blu-rays and DVDs.")
+  /// Not available for image subtitles - In the player's subtitle menu, shown under Size when the current subtitles are images that can't be resized
+  internal static let subtitleSizeImageUnavailable = L10n.tr("Localizable", "subtitleSizeImageUnavailable", fallback: "Not available for image subtitles")
   /// Track
   internal static let subtitleTrack = L10n.tr("Localizable", "subtitleTrack", fallback: "Track")
   /// Success
