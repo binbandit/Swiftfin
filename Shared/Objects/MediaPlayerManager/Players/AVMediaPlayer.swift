@@ -9,6 +9,7 @@
 import AVFoundation
 import AVKit
 import Combine
+import Defaults
 import Foundation
 @preconcurrency import JellyfinAPI
 import Observation
@@ -81,6 +82,8 @@ final class AVMediaPlayer: NSObject, MediaPlayer, MediaPlayerMetadataProviding {
     private var preparationTask: AnyCancellable?
     @ObservationIgnored
     private var subtitleOutput: AVPlayerItemLegibleOutput?
+    @ObservationIgnored
+    private var subtitleSizeObservation: AnyCancellable?
 
     override init() {
         player = AVPlayer()
@@ -90,6 +93,12 @@ final class AVMediaPlayer: NSObject, MediaPlayer, MediaPlayerMetadataProviding {
 
         player.appliesMediaSelectionCriteriaAutomatically = false
         player.allowsExternalPlayback = true
+
+        subtitleSizeObservation = Defaults.publisher(.VideoPlayer.Subtitle.size, options: [])
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.applySubtitleSize(to: self?.player.currentItem)
+            }
 
         #if os(iOS)
         automaticPiPObservation = observeAutomaticPictureInPicture()
@@ -111,6 +120,7 @@ final class AVMediaPlayer: NSObject, MediaPlayer, MediaPlayerMetadataProviding {
         output.setDelegate(self, queue: .main)
         playerItem.add(output)
         subtitleOutput = output
+        applySubtitleSize(to: playerItem)
 
         playerItem.externalMetadata = item.baseItem.avMetadata
         player.replaceCurrentItem(with: playerItem)
@@ -121,6 +131,15 @@ final class AVMediaPlayer: NSObject, MediaPlayer, MediaPlayerMetadataProviding {
         #if os(tvOS)
         observeDisplayModeSwitch()
         #endif
+    }
+
+    /// AVPlayer draws its subtitles itself, relative to the caption text style.
+    private func applySubtitleSize(to playerItem: AVPlayerItem?) {
+        let size = Defaults[.VideoPlayer.Subtitle.size]
+
+        playerItem?.textStyleRules = AVTextStyleRule(textMarkupAttributes: [
+            kCMTextMarkupAttribute_RelativeFontSize as String: size.rawValue,
+        ]).map { [$0] }
     }
 
     func updateMetadata(for item: MediaPlayerItem, artwork: UIImage?) {

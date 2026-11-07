@@ -7,6 +7,7 @@
 //
 
 import Combine
+import Defaults
 import JellyfinAPI
 import Logging
 import MPVUI
@@ -54,6 +55,8 @@ final class MPVMediaPlayer: VideoMediaPlayer, MediaPlayerOffsetProviding, MediaP
     private var seekLatencyBeforeRequest: Double?
     @ObservationIgnored
     private var seekStartedAt: ContinuousClock.Instant?
+    @ObservationIgnored
+    private var subtitleSizeObservation: AnyCancellable?
 
     init() {
         let logger = Logger.swiftfin()
@@ -74,6 +77,13 @@ final class MPVMediaPlayer: VideoMediaPlayer, MediaPlayerOffsetProviding, MediaP
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             logger.log(level: level, "mpv [\(message.prefix)]: \(text)")
         }
+
+        // mpv draws styled ASS subtitles itself. TextSubtitleOverlay sizes plain text ones.
+        subtitleSizeObservation = Defaults.publisher(.VideoPlayer.Subtitle.size)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] change in
+                self?.player.setProperty("sub-scale", to: String(change.newValue.scale))
+            }
 
         #if os(iOS)
         automaticPiPObservation = observeAutomaticPictureInPicture()

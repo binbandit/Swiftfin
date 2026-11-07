@@ -49,6 +49,8 @@ private struct TextSubtitleOverlayContent: View {
 
     @Default(.VideoPlayer.Subtitle.captionProfileID)
     private var profileID
+    @Default(.VideoPlayer.Subtitle.size)
+    private var subtitleSize
 
     let snapshot: TextSubtitleSnapshot
     let videoLayout: VideoPlayer.VideoLayout
@@ -64,7 +66,7 @@ private struct TextSubtitleOverlayContent: View {
     }
 
     private var basePointSize: CGFloat {
-        viewLayout.value(standard: 21, large: 36)
+        viewLayout.value(standard: 21, large: 36) * subtitleSize.scale
     }
 
     private var selectedCaptionStyle: CaptionStyle {

@@ -409,6 +409,10 @@ extension Defaults.Keys {
             static var captionProfileID: Key<String> {
                 UserKey("captionProfileID", default: "")
             }
+
+            static var size: Key<SubtitleSize> {
+                UserKey("subtitleSize", default: .percent100)
+            }
         }
 
         enum Transition {

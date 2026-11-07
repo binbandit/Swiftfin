@@ -54,6 +54,8 @@ struct VideoPlayerSettingsView: View {
 
     @StoredValue(.User.forceSubtitleBurnIn)
     private var forceSubtitleBurnIn
+    @Default(.VideoPlayer.Subtitle.size)
+    private var subtitleSize
 
     #if os(iOS)
     @Default(.VideoPlayer.Transition.automaticPictureInPicture)
@@ -378,6 +380,8 @@ struct VideoPlayerSettingsView: View {
         }
 
         Section {
+            PlatformPicker(L10n.size, selection: $subtitleSize)
+
             SystemSettingsButton(title: L10n.captionStyleSettings, destination: .captionStyles)
         } header: {
             Text(L10n.textStyle)

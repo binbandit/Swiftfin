@@ -59,6 +59,8 @@ extension VideoPlayer.PlaybackControls.Toolbar.ActionButtons {
 
         @Default(.VideoPlayer.Subtitle.captionProfileID)
         private var selectedProfileID
+        @Default(.VideoPlayer.Subtitle.size)
+        private var subtitleSize
 
         @Environment(MediaSession.self)
         private var mediaSession
@@ -171,6 +173,15 @@ extension VideoPlayer.PlaybackControls.Toolbar.ActionButtons {
                     Text(profiles.first(property: \.id, equalTo: profileID.wrappedValue)?.name ?? L10n.system)
                 }
                 .menuOrder(.fixed)
+
+                Picker(selection: $subtitleSize) {
+                    _CaseIterablePickerContent<SubtitleSize>()
+                } label: {
+                    Text(L10n.size)
+
+                    Text(subtitleSize.displayTitle)
+                }
+                .pickerStyle(.menu)
             }
         }
     }
