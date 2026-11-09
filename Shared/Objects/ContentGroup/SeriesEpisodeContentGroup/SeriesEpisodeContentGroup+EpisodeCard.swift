@@ -13,6 +13,9 @@ extension SeriesEpisodeContentGroup {
 
     struct EpisodeCard: View {
 
+        @AdaptiveLayout
+        private var viewLayout
+
         @Namespace
         private var namespace
 
@@ -24,6 +27,8 @@ extension SeriesEpisodeContentGroup {
 
         @SharedBaseItem
         var episode: BaseItemDto
+        /// Whether this is the episode whose page shows the card
+        let isCurrent: Bool
 
         private var episodeContent: String {
             if episode.isUnaired {
@@ -45,7 +50,8 @@ extension SeriesEpisodeContentGroup {
 
                     playMedia(intent: intent)
                 },
-                contentAction: {
+                // The current episode's details are the page already showing
+                contentAction: isCurrent ? nil : {
                     router.route(to: .item(item: episode), in: namespace)
                 },
                 contextMenuItem: episode
@@ -61,6 +67,12 @@ extension SeriesEpisodeContentGroup {
                         item: episode,
                         posterDisplayType: .landscape
                     )
+                }
+                .overlay(alignment: .topLeading) {
+                    if isCurrent {
+                        PosterTag(L10n.nowViewing, fill: .white, foreground: .black)
+                            .padding(viewLayout.indicatorSize * 0.22)
+                    }
                 }
                 .contentShape(.contextMenuPreview, Rectangle())
                 .subtleShadow()
@@ -131,7 +143,8 @@ extension SeriesEpisodeContentGroup {
         let subHeader: String
         let content: String
         let artworkAction: () -> Void
-        let contentAction: () -> Void
+        /// Opens the episode's details, or nothing when they're already showing
+        let contentAction: (() -> Void)?
         @OptionalSharedBaseItem
         var contextMenuItem: BaseItemDto?
         let artwork: Artwork
@@ -147,7 +160,7 @@ extension SeriesEpisodeContentGroup {
             subHeader: String,
             content: String,
             artworkAction: @escaping () -> Void,
-            contentAction: @escaping () -> Void,
+            contentAction: (() -> Void)?,
             contextMenuItem: BaseItemDto? = nil,
             @ViewBuilder artwork: () -> Artwork
         ) {
@@ -216,7 +229,9 @@ extension SeriesEpisodeContentGroup {
                 artworkButton
                     .posterAspectRatio(.landscape, contentMode: .fit)
 
-                Button(action: contentAction) {
+                Button {
+                    contentAction?()
+                } label: {
                     EpisodeMetadataView(
                         header: header,
                         subHeader: subHeader,
@@ -236,6 +251,7 @@ extension SeriesEpisodeContentGroup {
                     )
                 }
                 .focused($focusedElement, equals: .content)
+                .disabled(contentAction == nil)
             }
             .focusSection()
             .defaultFocus(

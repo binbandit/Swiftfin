@@ -1152,10 +1152,6 @@ internal enum L10n {
   internal static func moreFromDirector(_ p1: Any) -> String {
     return L10n.tr("Localizable", "moreFromDirector", String(describing: p1), fallback: "More from %1$@")
   }
-  /// More from %1$@ - Heading for the other episodes of a season on an episode page, such as More from Season 9
-  internal static func moreFromSeason(_ p1: Any) -> String {
-    return L10n.tr("Localizable", "moreFromSeason", String(describing: p1), fallback: "More from %1$@")
-  }
   /// Movie
   internal static let movie = L10n.tr("Localizable", "movie", fallback: "Movie")
   /// Movies
@@ -1246,6 +1242,8 @@ internal enum L10n {
   internal static let noRuntimeLimit = L10n.tr("Localizable", "noRuntimeLimit", fallback: "No runtime limit")
   /// Not supported
   internal static let notSupported = L10n.tr("Localizable", "notSupported", fallback: "Not supported")
+  /// Now Viewing - Tag on the episode card for the episode whose page is showing, in its season's row
+  internal static let nowViewing = L10n.tr("Localizable", "nowViewing", fallback: "Now Viewing")
   /// Off
   internal static let off = L10n.tr("Localizable", "off", fallback: "Off")
   /// Official rating

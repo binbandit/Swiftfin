@@ -17,8 +17,8 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
     let id: String
     @OptionalSharedBaseItem
     var playButtonItem: BaseItemDto?
-    /// The episode whose page shows this group. It is left out, and the row takes a heading instead of a season picker
-    let excludedEpisodeID: String?
+    /// The episode whose page shows this group. The row opens on it and marks it, and takes a heading instead of a season picker
+    let currentEpisodeID: String?
     let viewModel: PagingLibraryViewModel<SeasonViewModelLibrary>
 
     var _shouldBeResolved: Bool {
@@ -28,11 +28,11 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
     init(
         parent: BaseItemDto,
         playButtonItem: BaseItemDto? = nil,
-        excludedEpisodeID: String? = nil
+        currentEpisodeID: String? = nil
     ) {
         self.id = "\(parent.id ?? "parent")-episode-selector"
         self.playButtonItem = playButtonItem
-        self.excludedEpisodeID = excludedEpisodeID
+        self.currentEpisodeID = currentEpisodeID
         self.viewModel = .init(library: SeasonViewModelLibrary(parent: parent), pageSize: 100)
     }
 
@@ -40,7 +40,7 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
         Body(
             viewModel: viewModel,
             playButtonItem: playButtonItem,
-            excludedEpisodeID: excludedEpisodeID
+            currentEpisodeID: currentEpisodeID
         )
     }
 
@@ -51,7 +51,7 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
 
         @OptionalSharedBaseItem
         var playButtonItem: BaseItemDto?
-        let excludedEpisodeID: String?
+        let currentEpisodeID: String?
 
         @State
         private var selection: PagingLibraryViewModel<EpisodeLibrary>.ID?
@@ -62,9 +62,9 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
 
         @ViewBuilder
         private var header: some View {
-            if excludedEpisodeID != nil, let season = viewModel.elements.first {
+            if currentEpisodeID != nil, let season = viewModel.elements.first {
                 // An episode's page shows only its own season, so a picker would offer a single choice
-                Text(L10n.moreFromSeason(season.library.parent.displayTitle))
+                Text(season.library.parent.displayTitle)
                     .font(.title2)
                     .fontWeight(.semibold)
                     .accessibilityAddTraits(.isHeader)
@@ -106,7 +106,7 @@ struct SeriesEpisodeContentGroup: ContentGroup, Identifiable {
                     SeasonEpisodesView(
                         seasonViewModel: selectedSeasonViewModel,
                         playButtonItem: playButtonItem,
-                        excludedEpisodeID: excludedEpisodeID
+                        currentEpisodeID: currentEpisodeID
                     ) {
                         header
                     }

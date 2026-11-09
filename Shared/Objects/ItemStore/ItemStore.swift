@@ -35,6 +35,10 @@ final class ItemStore {
 
         let itemID: String
         var metadataChanged = false
+        /// Whether the change came with the item's complete metadata. List responses carry trimmed copies,
+        /// such as media streams without the server's subtitle scores, that differ from the full item
+        /// without anything having changed.
+        var hasCompleteMetadata = false
         var userDataChanged = false
 
         var hasChanges: Bool {

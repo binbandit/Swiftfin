@@ -25,25 +25,13 @@ struct NewEpisodesIndicator: View {
     var body: some View {
         ViewThatFits(in: .horizontal) {
             // The full label only where most of the artwork stays clear beside it
-            tag(L10n.newEpisodes)
+            PosterTag(L10n.newEpisodes, fill: accentColor, foreground: accentColor.overlayColor)
                 .padding(.leading, size * 2.5)
 
-            tag(L10n.new)
+            PosterTag(L10n.new, fill: accentColor, foreground: accentColor.overlayColor)
         }
         .padding(size * 0.22)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L10n.newEpisodes)
-    }
-
-    private func tag(_ title: String) -> some View {
-        Text(title.localizedUppercase)
-            .font(.system(size: size * 0.42, weight: .bold))
-            .kerning(0.5)
-            .lineLimit(1)
-            .foregroundStyle(accentColor.overlayColor)
-            .padding(.horizontal, size * 0.26)
-            .padding(.vertical, size * 0.12)
-            .background(accentColor, in: .capsule)
-            .shadow(color: .black.opacity(0.4), radius: size * 0.1, y: 1)
     }
 }

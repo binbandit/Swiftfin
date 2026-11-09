@@ -44,7 +44,10 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
             .compactMap { [weak self, weak store] change -> ContentGroupRefreshRequest? in
                 guard let self, case let .updated(update) = change else { return nil }
 
-                if update.itemID == self.id, update.metadataChanged {
+                // Only a complete copy of the item can say its metadata changed. An episode page lists its own
+                // season, and the trimmed list copy of the episode would otherwise refresh the page, which
+                // reloads the list, without end.
+                if update.itemID == self.id, update.metadataChanged, update.hasCompleteMetadata {
                     return ContentGroupRefreshRequest()
                 }
 
@@ -146,7 +149,7 @@ final class ItemContentGroupProvider: ViewModel, ContentGroupProvider {
                         seriesName: item.seriesName,
                         type: .season
                     ),
-                    excludedEpisodeID: itemID
+                    currentEpisodeID: itemID
                 )
             }
 

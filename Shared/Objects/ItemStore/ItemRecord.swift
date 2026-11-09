@@ -159,6 +159,7 @@ final class ItemRecord: Identifiable {
         let update = ItemStore.Update(
             itemID: id,
             metadataChanged: previousMetadata != updatedMetadata || previousProgramID != currentProgram?.id,
+            hasCompleteMetadata: patch.scope != .partial,
             userDataChanged: previousUserData != value.userData
         )
 

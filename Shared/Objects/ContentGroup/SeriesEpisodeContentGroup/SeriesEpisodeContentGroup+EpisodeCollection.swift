@@ -52,7 +52,7 @@ extension SeriesEpisodeContentGroup {
             ) {
                 header
             } content: { element in
-                EpisodeElementCard(element: element, refresh: {})
+                EpisodeElementCard(element: element, isCurrent: false, refresh: {})
             }
             .scrollDisabled(true)
         }
@@ -65,46 +65,28 @@ extension SeriesEpisodeContentGroup {
 
         @OptionalSharedBaseItem
         var playButtonItem: BaseItemDto?
-        let excludedEpisodeID: String?
+        let currentEpisodeID: String?
         let header: Header
 
         init(
             seasonViewModel: PagingLibraryViewModel<EpisodeLibrary>,
             playButtonItem: BaseItemDto?,
-            excludedEpisodeID: String?,
+            currentEpisodeID: String?,
             @ViewBuilder header: () -> Header
         ) {
             self.seasonViewModel = seasonViewModel
             self.playButtonItem = playButtonItem
-            self.excludedEpisodeID = excludedEpisodeID
+            self.currentEpisodeID = currentEpisodeID
             self.header = header()
-        }
-
-        private var episodes: [ItemEntry] {
-            seasonViewModel.elements.filter { $0.itemID != excludedEpisodeID }
-        }
-
-        /// The episode after the excluded one, or the one before it when the excluded episode ends the season
-        private var excludedEpisodeNeighborID: String? {
-            let elements = seasonViewModel.elements
-
-            guard let index = elements.firstIndex(where: { $0.itemID == excludedEpisodeID }) else { return nil }
-
-            return (elements[safe: index + 1] ?? elements[safe: index - 1])?.itemID
-        }
-
-        /// An episode's own page has nothing to list when its season holds no other episodes
-        private var isEmptyWithoutExcludedEpisode: Bool {
-            excludedEpisodeID != nil && seasonViewModel.state == .content && episodes.isEmpty
         }
 
         private var elements: [EpisodeElement] {
             switch seasonViewModel.state {
             case .content:
-                if episodes.isEmpty {
+                if seasonViewModel.elements.isEmpty {
                     [.empty]
                 } else {
-                    episodes.map(EpisodeElement.episode)
+                    seasonViewModel.elements.map(EpisodeElement.episode)
                 }
 
             case .error:
@@ -116,29 +98,27 @@ extension SeriesEpisodeContentGroup {
         }
 
         private var preferredElementID: EpisodeElement.ID? {
-            if let playButtonItemID = playButtonItem?.id,
-               elements.contains(where: { $0.id == playButtonItemID })
-            {
-                return playButtonItemID
+            let preferredID = playButtonItem?.id ?? currentEpisodeID
+
+            if let preferredID, elements.contains(where: { $0.id == preferredID }) {
+                return preferredID
             }
 
-            return excludedEpisodeNeighborID ?? elements.first?.id
+            return elements.first?.id
         }
 
         var body: some View {
-            if !isEmptyWithoutExcludedEpisode {
-                EpisodeCollectionLayout(
-                    elements: elements,
-                    preferredElementID: preferredElementID
-                ) {
-                    header
-                } content: { element in
-                    EpisodeElementCard(element: element) {
-                        seasonViewModel.refresh()
-                    }
+            EpisodeCollectionLayout(
+                elements: elements,
+                preferredElementID: preferredElementID
+            ) {
+                header
+            } content: { element in
+                EpisodeElementCard(element: element, isCurrent: element.id == currentEpisodeID) {
+                    seasonViewModel.refresh()
                 }
-                .scrollDisabled(seasonViewModel.state != .content)
             }
+            .scrollDisabled(seasonViewModel.state != .content)
         }
     }
 
@@ -226,6 +206,7 @@ extension SeriesEpisodeContentGroup {
     private struct EpisodeElementCard: View {
 
         let element: EpisodeElement
+        let isCurrent: Bool
         let refresh: () -> Void
 
         var body: some View {
@@ -241,7 +222,7 @@ extension SeriesEpisodeContentGroup {
                 .disabled(true)
 
             case let .episode(episode):
-                EpisodeCard(episode: episode.snapshot)
+                EpisodeCard(episode: episode.snapshot, isCurrent: isCurrent)
 
             case let .error(error):
                 EpisodeStateCard(
