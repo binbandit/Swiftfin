@@ -408,6 +408,7 @@ extension VideoPlayer {
             didSet {
                 #if os(tvOS)
                 supplementBottomAnchor?.constant = supplementOffset
+                viewState.supplementVisibleHeight = max(0, -supplementOffset)
                 #else
                 updateSupplementLayoutBounds()
                 #endif

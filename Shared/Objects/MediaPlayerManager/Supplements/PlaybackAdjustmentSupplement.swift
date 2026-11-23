@@ -16,10 +16,9 @@ struct PlaybackAdjustmentSupplement {
     let value: (MediaSession) -> Binding<Double>
     let range: ClosedRange<Double>
     let step: Double
-    let presets: [Double]
+    let shortcuts: [PlaybackAdjustmentSlider.Shortcut]
     let resetValue: Double
     let formatValue: (Double) -> String
-    let formatPreset: (Double) -> String
 
     var preferredFocusID: String {
         "\(VideoPlayer.ViewState.Focus.supplementContent(id)).slider"
@@ -51,10 +50,9 @@ extension PlaybackAdjustmentSupplement: VideoPlayerSupplement {
                 title: supplement.displayTitle,
                 range: supplement.range,
                 step: supplement.step,
-                presets: supplement.presets,
+                shortcuts: supplement.shortcuts,
                 resetValue: supplement.resetValue,
                 formatValue: supplement.formatValue,
-                formatPreset: supplement.formatPreset,
                 focusID: supplement.preferredFocusID
             )
             .frame(maxWidth: viewLayout.isLarge ? 1200 : 700)
@@ -86,7 +84,7 @@ extension PlaybackAdjustmentSupplement {
             title: L10n.audioOffset,
             keyPath: \.audioOffset,
             range: -5000 ... 5000,
-            presets: [-1000, -500, 0, 500, 1000]
+            step: 50
         )
     }
 
@@ -96,7 +94,7 @@ extension PlaybackAdjustmentSupplement {
             title: L10n.subtitleOffset,
             keyPath: \.subtitleOffset,
             range: subtitleOffsetRange,
-            presets: subtitleOffsetPresets
+            step: subtitleOffsetStep
         )
     }
 
@@ -106,14 +104,14 @@ extension PlaybackAdjustmentSupplement {
             title: L10n.secondarySubtitleOffset,
             keyPath: \.secondarySubtitleOffset,
             range: subtitleOffsetRange,
-            presets: subtitleOffsetPresets
+            step: subtitleOffsetStep
         )
     }
 
     // Subtitles timed for a different release can be out by many seconds, such as when an intro is cut,
-    // so they reach further than audio. The presets jump most of the way, as steps are only 50 ms.
+    // so they reach further than audio, without needing audio's lip-sync precision.
     private static let subtitleOffsetRange: ClosedRange<Double> = -15000 ... 15000
-    private static let subtitleOffsetPresets: [Double] = [-10000, -5000, -1000, 0, 1000, 5000, 10000]
+    private static let subtitleOffsetStep: Double = 100
 
     static func playbackSpeed(range: ClosedRange<Double>) -> Self {
         Self(
@@ -124,10 +122,11 @@ extension PlaybackAdjustmentSupplement {
             },
             range: range,
             step: 0.05,
-            presets: [0.5, 0.75, 1, 1.25, 1.5, 2],
+            shortcuts: [0.5, 0.75, 1, 1.25, 1.5, 2].map { speed in
+                .init(title: speed == 1 ? L10n.reset : speed.formatted(.playbackRate(precision: 2)), action: .set(speed))
+            },
             resetValue: 1,
-            formatValue: { $0.formatted(.playbackRate(precision: 2)) },
-            formatPreset: { $0.formatted(.playbackRate(precision: 2)) }
+            formatValue: { $0.formatted(.playbackRate(precision: 2)) }
         )
     }
 
@@ -136,7 +135,7 @@ extension PlaybackAdjustmentSupplement {
         title: String,
         keyPath: ReferenceWritableKeyPath<MediaPlayerItem, Duration>,
         range: ClosedRange<Double>,
-        presets: [Double]
+        step: Double
     ) -> Self {
         Self(
             id: id,
@@ -148,25 +147,29 @@ extension PlaybackAdjustmentSupplement {
                 )
             },
             range: range,
-            step: 50,
-            presets: presets,
+            step: step,
+            // Each press moves the offset again, so it can be walked in fine or coarse steps
+            shortcuts: [-1000, -500, -100].map(offsetAdjustment)
+                + [.init(title: L10n.reset, action: .set(0))]
+                + [100, 500, 1000].map(offsetAdjustment),
             resetValue: 0,
             formatValue: { value in
                 Duration.milliseconds(Int64(value.rounded()))
                     .formatted(.playbackOffset)
-            },
-            // Presets are round values, so they drop the trailing zeros and sign themselves, keeping the row on one line
-            formatPreset: { value in
-                let label = Duration.milliseconds(Int64(value.rounded())).formatted(
-                    .units(
-                        allowed: [.seconds],
-                        width: .abbreviated,
-                        fractionalPart: value.truncatingRemainder(dividingBy: 1000) == 0 ? .hide : .show(length: 1)
-                    )
-                )
-
-                return value > 0 ? "+\(label)" : label
             }
         )
+    }
+
+    /// A signed, compact label such as "+0.5s", which keeps the row of shortcuts on one line
+    private static func offsetAdjustment(by milliseconds: Double) -> PlaybackAdjustmentSlider.Shortcut {
+        let label = Duration.milliseconds(Int64(milliseconds)).formatted(
+            .units(
+                allowed: [.seconds],
+                width: .narrow,
+                fractionalPart: milliseconds.truncatingRemainder(dividingBy: 1000) == 0 ? .hide : .show(length: 1)
+            )
+        )
+
+        return .init(title: milliseconds > 0 ? "+\(label)" : label, action: .adjust(by: milliseconds))
     }
 }

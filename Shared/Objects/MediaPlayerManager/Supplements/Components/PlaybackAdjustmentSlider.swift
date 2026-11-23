@@ -10,6 +10,20 @@ import SwiftUI
 
 struct PlaybackAdjustmentSlider: View {
 
+    /// A button under the slider, such as a playback speed to switch to or an amount to move an offset by
+    struct Shortcut: Hashable {
+
+        enum Action: Hashable {
+
+            case set(Double)
+            /// Moves the current value, so pressing again keeps moving it
+            case adjust(by: Double)
+        }
+
+        let title: String
+        let action: Action
+    }
+
     @AdaptiveLayout
     private var viewLayout
 
@@ -19,10 +33,9 @@ struct PlaybackAdjustmentSlider: View {
     let title: String
     let range: ClosedRange<Double>
     let step: Double
-    let presets: [Double]
+    let shortcuts: [Shortcut]
     let resetValue: Double
     let formatValue: (Double) -> String
-    let formatPreset: (Double) -> String
     var focusID: String?
 
     private var sliderValue: Binding<Double> {
@@ -61,12 +74,17 @@ struct PlaybackAdjustmentSlider: View {
         #endif
     }
 
-    private var presetButtons: some View {
-        ForEach(presets, id: \.self) { preset in
+    private var shortcutButtons: some View {
+        ForEach(shortcuts, id: \.self) { shortcut in
             Button {
-                sliderValue.wrappedValue = preset
+                switch shortcut.action {
+                case let .set(newValue):
+                    sliderValue.wrappedValue = newValue
+                case let .adjust(amount):
+                    sliderValue.wrappedValue = value + amount
+                }
             } label: {
-                Text(preset == resetValue ? L10n.reset : formatPreset(preset))
+                Text(shortcut.title)
                     .monospacedDigit()
                     .frame(minWidth: viewLayout.isLarge ? 104 : nil, minHeight: viewLayout.isLarge ? 48 : nil)
             }
@@ -92,6 +110,8 @@ struct PlaybackAdjustmentSlider: View {
                         .labelStyle(.iconOnly)
                         .frame(width: viewLayout.isLarge ? 48 : 24, height: viewLayout.isLarge ? 48 : 34)
                 }
+                // Holding the button keeps stepping, rather than needing a press per step
+                .buttonRepeatBehavior(.enabled)
                 .disabled(value <= range.lowerBound)
 
                 VStack(spacing: viewLayout.isLarge ? 8 : 0) {
@@ -127,6 +147,7 @@ struct PlaybackAdjustmentSlider: View {
                         .labelStyle(.iconOnly)
                         .frame(width: viewLayout.isLarge ? 48 : 24, height: viewLayout.isLarge ? 48 : 34)
                 }
+                .buttonRepeatBehavior(.enabled)
                 .disabled(value >= range.upperBound)
             }
             .buttonStyle(.capsule)
@@ -137,7 +158,7 @@ struct PlaybackAdjustmentSlider: View {
                 spacing: viewLayout.isLarge ? 20 : 8,
                 lineSpacing: viewLayout.isLarge ? 20 : 8
             ) {
-                presetButtons
+                shortcutButtons
             }
             .frame(maxWidth: .infinity)
             #if os(tvOS)

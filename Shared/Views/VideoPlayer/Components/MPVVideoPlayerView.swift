@@ -13,6 +13,8 @@ struct MPVVideoPlayerView: View {
 
     @Environment(\.scenePhase)
     private var scenePhase
+    @Environment(VideoPlayer.ViewState.self)
+    private var viewState
 
     let player: MPVPlayer
     let textSubtitles: TextSubtitlePresentation
@@ -29,6 +31,12 @@ struct MPVVideoPlayerView: View {
         }
 
         return surface
+    }
+
+    /// An open panel, such as the subtitle offset, covers the bottom of a full-size video. Subtitles sit above it,
+    /// so their timing can be watched while it's adjusted.
+    private var subtitleBottomInset: CGFloat {
+        viewState.isPresentingSupplement && !viewState.isCompact ? viewState.supplementVisibleHeight : 0
     }
 
     private var captionsAreVisible: Bool {
@@ -48,6 +56,8 @@ struct MPVVideoPlayerView: View {
             .overlay {
                 if !isPictureInPictureActive, let snapshot = textSubtitles.snapshot {
                     TextSubtitleOverlay(snapshot: snapshot, videoLayout: layout, reportCaptions: nil)
+                        .padding(.bottom, subtitleBottomInset)
+                        .animation(.easeInOut(duration: 0.25), value: subtitleBottomInset)
                 }
             }
             .modifier(

@@ -29,9 +29,11 @@ extension VideoPlayer {
             #endif
         }
 
+        /// How much of the bottom of the screen the supplement panel covers
+        var supplementVisibleHeight: CGFloat = 0
+
         #if os(iOS)
         var supplementHeight: CGFloat = 0
-        var supplementVisibleHeight: CGFloat = 0
         var playbackButtonsInsets: EdgeInsets = .zero
         #endif
 
