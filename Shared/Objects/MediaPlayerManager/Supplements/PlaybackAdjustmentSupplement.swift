@@ -19,6 +19,7 @@ struct PlaybackAdjustmentSupplement {
     let presets: [Double]
     let resetValue: Double
     let formatValue: (Double) -> String
+    let formatPreset: (Double) -> String
 
     var preferredFocusID: String {
         "\(VideoPlayer.ViewState.Focus.supplementContent(id)).slider"
@@ -53,6 +54,7 @@ extension PlaybackAdjustmentSupplement: VideoPlayerSupplement {
                 presets: supplement.presets,
                 resetValue: supplement.resetValue,
                 formatValue: supplement.formatValue,
+                formatPreset: supplement.formatPreset,
                 focusID: supplement.preferredFocusID
             )
             .frame(maxWidth: viewLayout.isLarge ? 1200 : 700)
@@ -82,7 +84,9 @@ extension PlaybackAdjustmentSupplement {
         offset(
             id: "PlaybackAdjustment-audioOffset",
             title: L10n.audioOffset,
-            keyPath: \.audioOffset
+            keyPath: \.audioOffset,
+            range: -5000 ... 5000,
+            presets: [-1000, -500, 0, 500, 1000]
         )
     }
 
@@ -90,7 +94,9 @@ extension PlaybackAdjustmentSupplement {
         offset(
             id: "PlaybackAdjustment-subtitleOffset",
             title: L10n.subtitleOffset,
-            keyPath: \.subtitleOffset
+            keyPath: \.subtitleOffset,
+            range: subtitleOffsetRange,
+            presets: subtitleOffsetPresets
         )
     }
 
@@ -98,9 +104,16 @@ extension PlaybackAdjustmentSupplement {
         offset(
             id: "PlaybackAdjustment-secondarySubtitleOffset",
             title: L10n.secondarySubtitleOffset,
-            keyPath: \.secondarySubtitleOffset
+            keyPath: \.secondarySubtitleOffset,
+            range: subtitleOffsetRange,
+            presets: subtitleOffsetPresets
         )
     }
+
+    // Subtitles timed for a different release can be out by many seconds, such as when an intro is cut,
+    // so they reach further than audio. The presets jump most of the way, as steps are only 50 ms.
+    private static let subtitleOffsetRange: ClosedRange<Double> = -15000 ... 15000
+    private static let subtitleOffsetPresets: [Double] = [-10000, -5000, -1000, 0, 1000, 5000, 10000]
 
     static func playbackSpeed(range: ClosedRange<Double>) -> Self {
         Self(
@@ -113,14 +126,17 @@ extension PlaybackAdjustmentSupplement {
             step: 0.05,
             presets: [0.5, 0.75, 1, 1.25, 1.5, 2],
             resetValue: 1,
-            formatValue: { $0.formatted(.playbackRate(precision: 2)) }
+            formatValue: { $0.formatted(.playbackRate(precision: 2)) },
+            formatPreset: { $0.formatted(.playbackRate(precision: 2)) }
         )
     }
 
     private static func offset(
         id: String,
         title: String,
-        keyPath: ReferenceWritableKeyPath<MediaPlayerItem, Duration>
+        keyPath: ReferenceWritableKeyPath<MediaPlayerItem, Duration>,
+        range: ClosedRange<Double>,
+        presets: [Double]
     ) -> Self {
         Self(
             id: id,
@@ -131,13 +147,25 @@ extension PlaybackAdjustmentSupplement {
                     set: { mediaSession.playbackItem?[keyPath: keyPath] = .milliseconds(Int64($0.rounded())) }
                 )
             },
-            range: -5000 ... 5000,
+            range: range,
             step: 50,
-            presets: [-1000, -500, 0, 500, 1000],
+            presets: presets,
             resetValue: 0,
             formatValue: { value in
                 Duration.milliseconds(Int64(value.rounded()))
                     .formatted(.playbackOffset)
+            },
+            // Presets are round values, so they drop the trailing zeros and sign themselves, keeping the row on one line
+            formatPreset: { value in
+                let label = Duration.milliseconds(Int64(value.rounded())).formatted(
+                    .units(
+                        allowed: [.seconds],
+                        width: .abbreviated,
+                        fractionalPart: value.truncatingRemainder(dividingBy: 1000) == 0 ? .hide : .show(length: 1)
+                    )
+                )
+
+                return value > 0 ? "+\(label)" : label
             }
         )
     }

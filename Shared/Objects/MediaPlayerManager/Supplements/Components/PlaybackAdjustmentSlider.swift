@@ -22,6 +22,7 @@ struct PlaybackAdjustmentSlider: View {
     let presets: [Double]
     let resetValue: Double
     let formatValue: (Double) -> String
+    let formatPreset: (Double) -> String
     var focusID: String?
 
     private var sliderValue: Binding<Double> {
@@ -65,7 +66,7 @@ struct PlaybackAdjustmentSlider: View {
             Button {
                 sliderValue.wrappedValue = preset
             } label: {
-                Text(preset == resetValue ? L10n.reset : formatValue(preset))
+                Text(preset == resetValue ? L10n.reset : formatPreset(preset))
                     .monospacedDigit()
                     .frame(minWidth: viewLayout.isLarge ? 104 : nil, minHeight: viewLayout.isLarge ? 48 : nil)
             }
