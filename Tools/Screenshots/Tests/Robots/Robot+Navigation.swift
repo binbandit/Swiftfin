@@ -13,6 +13,11 @@ extension Robot {
     func signIn(to server: String, username: String) {
         tap(button(L10n.connect))
 
+        #if os(tvOS)
+        // tvOS opens on servers found automatically. The address field is under Manual.
+        tap(button(L10n.manual))
+        #endif
+
         let field = waitFor(app.textFields[L10n.url])
 
         type(server, into: field)

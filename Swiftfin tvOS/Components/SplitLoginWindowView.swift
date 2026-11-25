@@ -43,19 +43,7 @@ struct SplitLoginWindowView<Leading: View, Trailing: View>: View {
             .frame(maxWidth: .infinity)
             .edgePadding(.vertical)
         }
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Image(uiImage: .jellyfinBlobBlue)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 100)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                if isLoading {
-                    ProgressView()
-                }
-            }
-        }
+        .loginWindowToolbar(isLoading: isLoading)
         .background {
             if let backgroundImageSource {
                 ZStack {
@@ -86,5 +74,25 @@ extension SplitLoginWindowView {
         self.isLoading = isLoading
         self.leadingContentView = leadingContentView()
         self.trailingContentView = trailingContentView()
+    }
+}
+
+extension View {
+
+    /// The Jellyfin logo, and a spinner while `isLoading`, atop the connect and sign-in screens
+    func loginWindowToolbar(isLoading: Bool) -> some View {
+        toolbar {
+            ToolbarItem(placement: .principal) {
+                Image(uiImage: .jellyfinBlobBlue)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if isLoading {
+                    ProgressView()
+                }
+            }
+        }
     }
 }

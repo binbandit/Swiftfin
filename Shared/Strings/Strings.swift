@@ -196,6 +196,8 @@ internal enum L10n {
   internal static let auto = L10n.tr("Localizable", "auto", fallback: "Auto")
   /// Optimizes playback using default settings for most devices. Some formats may require server transcoding for non-compatible media types.
   internal static let autoDescription = L10n.tr("Localizable", "autoDescription", fallback: "Optimizes playback using default settings for most devices. Some formats may require server transcoding for non-compatible media types.")
+  /// Automatic
+  internal static let automatic = L10n.tr("Localizable", "automatic", fallback: "Automatic")
   /// Automatic Picture in Picture
   internal static let automaticPictureInPicture = L10n.tr("Localizable", "automaticPictureInPicture", fallback: "Automatic Picture in Picture")
   /// Auto play
@@ -1060,6 +1062,8 @@ internal enum L10n {
   internal static let longestFirst = L10n.tr("Localizable", "longestFirst", fallback: "Longest first")
   /// Long press
   internal static let longPress = L10n.tr("Localizable", "longPress", fallback: "Long press")
+  /// Looking for servers...
+  internal static let lookingForServers = L10n.tr("Localizable", "lookingForServers", fallback: "Looking for servers...")
   /// Lowest first - Numeric sort order, smallest value first
   internal static let lowestFirst = L10n.tr("Localizable", "lowestFirst", fallback: "Lowest first")
   /// Lyricist
@@ -1072,6 +1076,8 @@ internal enum L10n {
   internal static let management = L10n.tr("Localizable", "management", fallback: "Management")
   /// Delete, upload, or search for external subtitles.
   internal static let manageSubtitlesDescription = L10n.tr("Localizable", "manageSubtitlesDescription", fallback: "Delete, upload, or search for external subtitles.")
+  /// Manual
+  internal static let manual = L10n.tr("Localizable", "manual", fallback: "Manual")
   /// Manual playlists folder
   internal static let manualPlaylistsFolder = L10n.tr("Localizable", "manualPlaylistsFolder", fallback: "Manual playlists folder")
   /// Manual playlists folders
@@ -1240,6 +1246,12 @@ internal enum L10n {
   }
   /// No runtime limit
   internal static let noRuntimeLimit = L10n.tr("Localizable", "noRuntimeLimit", fallback: "No runtime limit")
+  /// No servers found
+  internal static let noServersFound = L10n.tr("Localizable", "noServersFound", fallback: "No servers found")
+  /// Choose Manual to enter a server's address.
+  internal static let noServersFoundHint = L10n.tr("Localizable", "noServersFoundHint", fallback: "Choose Manual to enter a server\'s address.")
+  /// Away from home? Turn on Tailscale on this Apple TV.
+  internal static let noServersFoundTailscaleHint = L10n.tr("Localizable", "noServersFoundTailscaleHint", fallback: "Away from home? Turn on Tailscale on this Apple TV.")
   /// Not supported
   internal static let notSupported = L10n.tr("Localizable", "notSupported", fallback: "Not supported")
   /// Now Viewing - Tag on the episode card for the episode whose page is showing, in its season's row
@@ -1262,6 +1274,8 @@ internal enum L10n {
   internal static let onlyForced = L10n.tr("Localizable", "onlyForced", fallback: "Only forced")
   /// On Now
   internal static let onNow = L10n.tr("Localizable", "onNow", fallback: "On Now")
+  /// On this network
+  internal static let onThisNetwork = L10n.tr("Localizable", "onThisNetwork", fallback: "On this network")
   /// Opacity
   internal static let opacity = L10n.tr("Localizable", "opacity", fallback: "Opacity")
   /// Open in Safari
@@ -2132,6 +2146,8 @@ internal enum L10n {
   internal static let useSplashscreen = L10n.tr("Localizable", "useSplashscreen", fallback: "Use splashscreen")
   /// Version
   internal static let version = L10n.tr("Localizable", "version", fallback: "Version")
+  /// Via Tailscale
+  internal static let viaTailscale = L10n.tr("Localizable", "viaTailscale", fallback: "Via Tailscale")
   /// Video
   internal static let video = L10n.tr("Localizable", "video", fallback: "Video")
   /// The video bit depth is not supported

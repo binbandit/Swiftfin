@@ -1,0 +1,23 @@
+//
+// Swiftfin is subject to the terms of the Mozilla Public
+// License, v2.0. If a copy of the MPL was not distributed with this
+// file, you can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2026 Jellyfin & Jellyfin Contributors
+//
+
+// The family's own server on tvOS:
+// - users: sign-in tiles for accounts that the server hides from its public user list, shown only on that server.
+// - addresses: tried by Automatic on the add-server screen, such as the server's Tailscale address,
+//   so an Apple TV running Tailscale finds the server away from home.
+// Copy this file to FamilyServer.xcconfig, which is gitignored, and replace the value.
+// Builds without that file show the server's public users only, and Automatic finds servers on the local network only.
+//
+// FAMILY_SERVER is URL-safe base64 of JSON with the server's ID (GET /System/Info/Public), its users,
+// whose fields are named as the Jellyfin API returns them, and its addresses. Both lists are optional.
+// This example decodes to:
+//   {"serverID":"0123456789abcdef0123456789abcdef","users":[{"Id":"11111111111111111111111111111111","Name":"Avery"},{"Id":"22222222222222222222222222222222","Name":"Quinn"}],"addresses":["http://media-server.tail0000.ts.net:8096"]}
+// Encode with: base64 -i server.json | tr -d '\n' | tr '+/' '-_'
+// URL-safe because xcconfig reads "//" as the start of a comment.
+
+FAMILY_SERVER = eyJzZXJ2ZXJJRCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwidXNlcnMiOlt7IklkIjoiMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLCJOYW1lIjoiQXZlcnkifSx7IklkIjoiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIiLCJOYW1lIjoiUXVpbm4ifV0sImFkZHJlc3NlcyI6WyJodHRwOi8vbWVkaWEtc2VydmVyLnRhaWwwMDAwLnRzLm5ldDo4MDk2Il19

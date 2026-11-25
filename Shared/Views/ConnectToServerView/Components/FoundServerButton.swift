@@ -6,29 +6,39 @@
 // Copyright (c) 2026 Jellyfin & Jellyfin Contributors
 //
 
-import Combine
-import Defaults
 import SwiftUI
 
 extension ConnectToServerView {
 
-    struct LocalServerButton: View {
+    struct FoundServerButton: View {
 
         @AdaptiveLayout
         private var viewLayout
 
-        let server: ServerState
+        let foundServer: ConnectToServerViewModel.FoundServer
         let action: () -> Void
+
+        // How the server is reached says more than its address
+        private var routeDescription: String {
+            switch foundServer.route {
+            case .localNetwork:
+                L10n.onThisNetwork
+            case .tailscale:
+                L10n.viaTailscale
+            case .internet:
+                foundServer.server.currentURL.absoluteString
+            }
+        }
 
         var body: some View {
             Button(action: action) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(server.name)
+                        Text(foundServer.server.name)
                             .font(.headline)
                             .fontWeight(.semibold)
 
-                        Text(server.currentURL.absoluteString)
+                        Text(routeDescription)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

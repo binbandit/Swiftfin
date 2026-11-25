@@ -104,6 +104,8 @@ Shared/Generated/Strings.swift
 Tools/Screenshots/Output/**/Frame/
 Tools/Screenshots/Raw/
 XcodeConfig/DevelopmentTeam.xcconfig
+XcodeConfig/FamilyServer.xcconfig
+# Its old name, so a copy left in a checkout is never committed
 XcodeConfig/FamilyUsers.xcconfig
 
 # Other

@@ -103,7 +103,7 @@ final class UserSignInViewModel: ObservableObject {
     let hasFamilyUsers: Bool
 
     init(server: ServerState) {
-        let familyUsers = FamilyUsers.users(forServer: server.id)
+        let familyUsers = FamilyServer.users(forServer: server.id)
 
         self.server = server
         self.hasFamilyUsers = familyUsers.isNotEmpty
@@ -283,7 +283,7 @@ final class UserSignInViewModel: ObservableObject {
 
         // A family user the server also lists publicly keeps the server's copy
         let publicUserIDs = Set(response.value.map(\.id))
-        let familyUsers = FamilyUsers.users(forServer: server.id)
+        let familyUsers = FamilyServer.users(forServer: server.id)
             .filter { !publicUserIDs.contains($0.id) }
 
         return response.value + familyUsers

@@ -12,11 +12,29 @@ import SwiftUI
 
 struct ConnectToServerView: View {
 
+    #if os(tvOS)
+    private enum Mode: CaseIterable, Displayable {
+        case automatic
+        case manual
+
+        var displayTitle: String {
+            switch self {
+            case .automatic:
+                L10n.automatic
+            case .manual:
+                L10n.manual
+            }
+        }
+    }
+    #endif
+
     @Default(.accentColor)
     private var accentColor
 
     @FocusState
     private var isURLFocused: Bool
+    @FocusState
+    private var focusedServerID: String?
 
     @Router
     private var router
@@ -26,6 +44,13 @@ struct ConnectToServerView: View {
 
     @State
     private var url: String = ""
+
+    #if os(tvOS)
+    @State
+    private var mode: Mode = .automatic
+    @State
+    private var hasFocusedFirstServer = false
+    #endif
 
     @StateObject
     private var viewModel = ConnectToServerViewModel()
@@ -103,25 +128,79 @@ struct ConnectToServerView: View {
         }
     }
 
-    // MARK: - Local Servers Section
+    // MARK: - Found Servers
 
+    private var foundServerButtons: some View {
+        ForEach(viewModel.foundServers) { foundServer in
+            FoundServerButton(foundServer: foundServer) {
+                url = foundServer.server.currentURL.absoluteString
+                viewModel.connect(url: url)
+            }
+            .focused($focusedServerID, equals: foundServer.id)
+        }
+    }
+
+    #if os(iOS)
     private var localServersSection: some View {
         Section(L10n.localServers) {
-            if viewModel.localServers.isEmpty {
+            if viewModel.foundServers.isEmpty {
                 Text(L10n.noLocalServersFound)
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
             } else {
-                ForEach(viewModel.localServers) { server in
-                    LocalServerButton(server: server) {
-                        url = server.currentURL.absoluteString
-                        viewModel.connect(url: server.currentURL.absoluteString)
-                    }
-                }
+                foundServerButtons
             }
         }
     }
+    #endif
+
+    #if os(tvOS)
+    // Servers on this network, and the family server through Tailscale, without typing an address
+    private var automaticSection: some View {
+        Section(L10n.servers) {
+            if viewModel.foundServers.isNotEmpty {
+                foundServerButtons
+            } else if viewModel.hasSearched {
+                VStack(spacing: 12) {
+                    Text(L10n.noServersFound)
+                        .font(.callout)
+                        .fontWeight(.semibold)
+
+                    // Tailscale only helps when the build knows an address to try through it
+                    Text(FamilyServer.addresses.isEmpty ? L10n.noServersFoundHint : L10n.noServersFoundTailscaleHint)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
+            } else {
+                HStack(spacing: 20) {
+                    ProgressView()
+
+                    Text(L10n.lookingForServers)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
+            }
+        }
+    }
+
+    // Lands on the first server found, once, unless the user has already moved on to something else
+    private func focusFirstServer() {
+        guard !hasFocusedFirstServer,
+              mode == .automatic,
+              focusedServerID == nil,
+              let firstServer = viewModel.foundServers.first
+        else { return }
+
+        hasFocusedFirstServer = true
+        focusedServerID = firstServer.id
+    }
+    #endif
 
     private var contentView: some View {
         #if os(iOS)
@@ -135,12 +214,31 @@ struct ConnectToServerView: View {
             router.dismiss()
         }
         #else
-        SplitLoginWindowView(
-            isLoading: viewModel.state == .connecting
-        ) {
-            connectSection
-        } trailingContentView: {
-            localServersSection
+        VStack(spacing: 60) {
+            Picker(L10n.connectToServer, selection: $mode) {
+                ForEach(Mode.allCases, id: \.self) { mode in
+                    Text(mode.displayTitle)
+                        .tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 560)
+
+            VStack(alignment: .leading, spacing: 22) {
+                switch mode {
+                case .automatic:
+                    automaticSection
+                case .manual:
+                    connectSection
+                }
+            }
+            .frame(width: 860)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .edgePadding(.vertical)
+        .loginWindowToolbar(isLoading: viewModel.state == .connecting)
+        .onChange(of: viewModel.foundServers) {
+            focusFirstServer()
         }
         #endif
     }

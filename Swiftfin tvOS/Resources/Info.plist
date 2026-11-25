@@ -47,8 +47,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundledisplayTitle</key>
 	<string>Jellyfin</string>
-	<key>FamilyUsers</key>
-	<string>$(FAMILY_USERS)</string>
+	<key>FamilyServer</key>
+	<string>$(FAMILY_SERVER)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
